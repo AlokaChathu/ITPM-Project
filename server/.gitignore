@@ -1,0 +1,25 @@
+# Dependency directories
+node_modules/
+
+# Environment variables (මෙය අනිවාර්යයෙන්ම ignore කළ යුතුයි)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+
+# Testing
+coverage/

@@ -1,0 +1,25 @@
+import { useContext } from 'react'
+import { AppContent } from '../context/AppContext'
+import Image1 from '../assets/mern-logo.png'
+
+function Header() {
+
+    const {userData} = useContext(AppContent);
+
+  return (
+    <div className='flex flex-col items-center mt-20 px-4 text-center
+    text-gray-800'>
+      <img src={Image1} alt=""  className='w-auto h-40 rounded-full mb-6' />
+
+      <h1 className='flex items-center gap-2 text-xl sm:text-3xl font-medium mb-2 text-white/65'>Hey {userData ?userData.name:'Developer'} </h1>
+      
+      <h2 className='text-3xl sm:text-5xl font-semibold mb-4 text-white/85'>Welcome to Auth System</h2>
+
+      <p className='mb-8 max-w-md text-white/65'>This is a fully secured, production-ready authentication solution designed for immediate integration and use.</p>
+
+        <button className='border border-white/80 rounded-full px-8 py-2.5 text-white/80 hover:bg-gray-100 hover:text-black cursor-pointer transition-all'>Get Started</button>
+    </div>
+  )
+}
+
+export default Header
