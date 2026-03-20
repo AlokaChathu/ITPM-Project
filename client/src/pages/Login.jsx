@@ -4,7 +4,7 @@ import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import LoadingSpinner from "../components/LoadingSpinner";
-import NewLogo from "../assets/LogoNew.png";
+import NewLogo from "../assets/TalenTracerLogo.png";
 import BgImg from "../assets/backgroundImage.png";
 import PasswordStatus from '../pages/SignUp/PasswordStatus'
 import InputField from '../pages/InputField'

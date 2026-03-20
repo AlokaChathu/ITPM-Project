@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Logo from '../assets/LogoNew.png'
+import Logo from '../assets/TalenTracerLogo.png'
 
 function Navbar() {
   const navigate = useNavigate();

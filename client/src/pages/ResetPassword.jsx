@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import NewLogo from '../assets/LogoNew.png';
+import NewLogo from '../assets/TalenTracerLogo.png';
 import LoadingSpinner from "../components/LoadingSpinner";
 import BgImg from "../assets/backgroundImage.png";
 

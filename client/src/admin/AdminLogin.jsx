@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import BgImg from "../assets/backgroundImage.png";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-toastify";
-import NewLogo from "../assets/LogoNew.png";
+import NewLogo from "../assets/TalenTracerLogo.png";
 
 import {
   Mail,Lock
