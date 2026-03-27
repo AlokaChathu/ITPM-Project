@@ -18,6 +18,8 @@ import AdminReadiness from './admin/AdminReadiness';
 import StudentReadiness from './pages/StudentReadiness';
 import AdminJobs from './admin/AdminJobs';
 import StudentJobs from './pages/StudentJobs';
+import StudentPortfolio from './pages/StudentPortfolio';
+import AdminStudents from './admin/AdminStudents';
 
 function App() {
   return (
@@ -39,6 +41,8 @@ function App() {
         <Route path='/readiness' element={<StudentReadiness/>}/>
         <Route path='/admin/jobs' element={<AdminJobs/>}/>
         <Route path='/jobs' element={<StudentJobs/>}/>
+        <Route path='/portfolio' element={<StudentPortfolio/>}/>
+        <Route path='/admin/students' element={<AdminStudents/>}/>
 
       </Routes>
     </div>

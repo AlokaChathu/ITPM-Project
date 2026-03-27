@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ClipboardCheck } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Navbar2 from '../components/Navbar2';
 
 function AdminHome() {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,10 @@ function AdminHome() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
+
+    <>
+      
+    
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 p-8">
       <div className="max-w-5xl mx-auto mt-10">
 
@@ -84,10 +89,29 @@ function AdminHome() {
             </p>
           </div>
 
+          {/* Student Directory Module Card */}
+          <div 
+            onClick={() => navigate('/admin/students')}
+            className="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50 cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all group flex flex-col items-center text-center"
+          >
+            <div className="bg-teal-100 p-4 rounded-full text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors mb-4 shadow-inner">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-teal-700 transition-colors">
+              Student Directory
+            </h3>
+            <p className="text-slate-600 text-sm">
+              View student portfolios, analyze skills, and send direct messages.
+            </p>
+          </div>
+
         </div>
 
       </div>
     </div>
+    </>
   );
 }
 

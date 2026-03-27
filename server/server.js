@@ -8,6 +8,8 @@ import userRouter from "./routes/userRoutes.js";
 import adminRouter from './routes/Admin.route.js'
 import readinessRouter from "./routes/readinessRoutes.js";
 import jobRouter from "./routes/jobRoutes.js";
+import portfolioRouter from "./routes/portfolioRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use('/api/user',userRouter);
 app.use('/api/admin',adminRouter);
 app.use('/api/readiness', readinessRouter);
 app.use('/api/jobs', jobRouter);
+app.use('/api/portfolio', portfolioRouter);
+app.use('/api/messages', messageRouter);
 
 app.listen(port,()=>console.log(`Server started on PORT:${port}
 `));
