@@ -3,7 +3,7 @@ import { AppContent } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../components/LoadingSpinner';
+import Navbar from '../components/Navbar2';
 
 function StudentReadiness() {
   const { userData } = useContext(AppContent);
@@ -81,85 +81,139 @@ function StudentReadiness() {
   if (!userData) {
     return (
       <div className='min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100'>
-        <LoadingSpinner />
+        Page is Loading...
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8'>
-      <div className='max-w-3xl mx-auto'>
-        <button 
-          onClick={() => navigate('/customer-home')}
-          className='mb-6 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-2 transition'
-        >
-          ← Back to Dashboard
-        </button>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-indigo-50">
+      <Navbar />
 
-        <div className='bg-white rounded-2xl shadow-xl p-8 border-t-4 border-indigo-600'>
-          <div className='flex justify-between items-start mb-6'>
-            <div>
-              <h1 className='text-3xl font-bold text-slate-800 mb-2'>Internship Readiness</h1>
-              <p className='text-slate-500 text-sm'>Submit your details to be evaluated for internship eligibility.</p>
-            </div>
-            {readinessData && (
-              <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${
-                readinessData.status === 'Ready' ? 'bg-green-100 text-green-700' : 
-                readinessData.status === 'In Review' ? 'bg-blue-100 text-blue-700' : 
-                'bg-yellow-100 text-yellow-700'
-              }`}>
-                {readinessData.status}
-              </span>
-            )}
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 ">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <button
+              onClick={() => navigate('/customer-home')}
+              className="inline-flex items-center gap-2 text-indigo-700 hover:text-indigo-900 font-semibold transition"
+            >
+              <span className="text-lg">←</span>
+              Back to Dashboard
+            </button>
+            <h1 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">Internship Readiness</h1>
+            <p className="mt-2 text-slate-600 max-w-2xl">
+              Submit your CV/portfolio and academic summary to be evaluated for internship eligibility.
+            </p>
           </div>
 
-          {isFetchingReadiness ? (
-            <div className="flex justify-center py-8"><LoadingSpinner /></div>
-          ) : (
-            <>
-              {/* Submission Form */}
-              <form onSubmit={handleSubmitReadiness} className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-100 mb-6">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">CV / Portfolio Link *</label>
-                  <input 
-                    type="url" 
-                    value={cvUrl} 
-                    onChange={(e) => setCvUrl(e.target.value)} 
-                    placeholder="https://drive.google.com/..." 
-                    className="w-full border rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition bg-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Academic Performance summary</label>
-                  <input 
-                    type="text" 
-                    value={academicPerformance} 
-                    onChange={(e) => setAcademicPerformance(e.target.value)} 
-                    placeholder="e.g., CGPA: 3.5, Expected Graduation: 2025" 
-                    className="w-full border rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition bg-white"
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-indigo-700 transition disabled:opacity-70 shadow-md cursor-pointer"
-                >
-                  {isSubmitting ? 'Submitting...' : readinessData ? 'Update Submission' : 'Submit for Review'}
-                </button>
-              </form>
+          {readinessData && (
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border shadow-sm ${
+                readinessData.status === 'Ready'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : readinessData.status === 'In Review'
+                  ? 'bg-sky-50 text-sky-700 border-sky-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}
+            >
+              <span className="h-2 w-2 rounded-full bg-current" />
+              {readinessData.status}
+            </span>
+          )}
+        </div>
 
-              {/* Admin Feedback Section */}
-              {readinessData && (readinessData.skillGaps.length > 0 || readinessData.interviewNotes) && (
-                <div className="mt-8 space-y-6">
-                  <h4 className="text-xl font-bold text-slate-800 border-b pb-2">Evaluation Feedback</h4>
-                  
+        {readinessData && (
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm text-slate-500">Eligibility</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{readinessData.isEligible ? 'Approved' : 'Pending'}</p>
+              <p className="mt-1 text-xs text-slate-500">Based on your latest evaluation</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm text-slate-500">Skill gaps</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{readinessData.skillGaps.length}</p>
+              <p className="mt-1 text-xs text-slate-500">Areas to improve</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm text-slate-500">Suggested courses</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{readinessData.suggestedCourses.length}</p>
+              <p className="mt-1 text-xs text-slate-500">Recommended actions</p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Your submission</h2>
+                  <p className="mt-1 text-sm text-slate-600">Add a shareable link and keep it up to date.</p>
+                </div>
+                <div className="hidden sm:block text-xs text-slate-500">* Required fields</div>
+              </div>
+
+              <div className="mt-6">
+                {isFetchingReadiness ? (
+                  <div className="flex justify-center py-10">Page is Loading...</div>
+                ) : (
+                  <form onSubmit={handleSubmitReadiness} className="space-y-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-2">CV / Portfolio Link *</label>
+                      <input
+                        type="url"
+                        value={cvUrl}
+                        onChange={(e) => setCvUrl(e.target.value)}
+                        placeholder="https://drive.google.com/..."
+                        className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                        required
+                      />
+                      <p className="mt-2 text-xs text-slate-500">Tip: Make sure your link permissions allow viewing.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-2">Academic Performance summary</label>
+                      <input
+                        type="text"
+                        value={academicPerformance}
+                        onChange={(e) => setAcademicPerformance(e.target.value)}
+                        placeholder="e.g., CGPA: 3.5, Expected Graduation: 2025"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-indigo-700 disabled:opacity-70"
+                      >
+                        {isSubmitting ? 'Submitting...' : readinessData ? 'Update Submission' : 'Submit for Review'}
+                      </button>
+                      <div className="inline-flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        Saved to your profile
+                      </div>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+
+            {readinessData && (readinessData.skillGaps.length > 0 || readinessData.interviewNotes) && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+                <div className="flex items-center justify-between gap-4">
+                  <h4 className="text-lg font-bold text-slate-900">Evaluation Feedback</h4>
+                  <span className="text-xs text-slate-500">From admin review</span>
+                </div>
+
+                <div className="mt-4 space-y-6">
                   {readinessData.skillGaps.length > 0 && (
                     <div>
-                      <p className="text-sm font-semibold text-slate-600 mb-2">Identified Skill Gaps:</p>
+                      <p className="text-sm font-semibold text-slate-700 mb-2">Identified Skill Gaps</p>
                       <div className="flex flex-wrap gap-2">
                         {readinessData.skillGaps.map((gap, i) => (
-                          <span key={i} className="bg-red-50 text-red-600 px-3 py-1 rounded-md text-sm font-medium border border-red-100">{gap}</span>
+                          <span key={i} className="bg-rose-50 text-rose-700 px-3 py-1 rounded-lg text-sm font-medium border border-rose-200">{gap}</span>
                         ))}
                       </div>
                     </div>
@@ -167,10 +221,10 @@ function StudentReadiness() {
 
                   {readinessData.suggestedCourses.length > 0 && (
                     <div>
-                      <p className="text-sm font-semibold text-slate-600 mb-2">Suggested Action Plan / Courses:</p>
+                      <p className="text-sm font-semibold text-slate-700 mb-2">Suggested Action Plan / Courses</p>
                       <div className="flex flex-wrap gap-2">
                         {readinessData.suggestedCourses.map((course, i) => (
-                          <span key={i} className="bg-blue-50 text-blue-600 px-3 py-1 rounded-md text-sm font-medium border border-blue-100">{course}</span>
+                          <span key={i} className="bg-sky-50 text-sky-700 px-3 py-1 rounded-lg text-sm font-medium border border-sky-200">{course}</span>
                         ))}
                       </div>
                     </div>
@@ -178,21 +232,23 @@ function StudentReadiness() {
 
                   {readinessData.interviewNotes && (
                     <div>
-                      <p className="text-sm font-semibold text-slate-600 mb-2">Interview Notes:</p>
-                      <div className="bg-slate-50 p-4 rounded-lg border text-sm text-slate-700 italic shadow-inner">
+                      <p className="text-sm font-semibold text-slate-700 mb-2">Interview Notes</p>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 italic">
                         "{readinessData.interviewNotes}"
                       </div>
                     </div>
                   )}
 
-                  <div className={`p-4 rounded-xl border-2 flex items-center justify-between ${
-                    readinessData.isEligible ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-slate-50 border-slate-200'
-                  }`}>
+                  <div
+                    className={`p-4 rounded-2xl border-2 flex items-center justify-between gap-6 ${
+                      readinessData.isEligible ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
                     <div>
-                      <p className="font-bold text-slate-800">Internship Eligibility</p>
+                      <p className="font-bold text-slate-900">Internship Eligibility</p>
                       <p className="text-sm text-slate-600 mt-1">
-                        {readinessData.isEligible 
-                          ? "Congratulations! You are approved to proceed to the internship phase." 
+                        {readinessData.isEligible
+                          ? "Congratulations! You are approved to proceed to the internship phase."
                           : "You must complete the suggested actions above to gain eligibility."}
                       </p>
                     </div>
@@ -200,11 +256,28 @@ function StudentReadiness() {
                       {readinessData.isEligible ? '🎉' : '⏳'}
                     </div>
                   </div>
-
                 </div>
-              )}
-            </>
-          )}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+              <h3 className="text-base font-bold text-slate-900">Guidelines</h3>
+              <ul className="mt-3 space-y-2 text-sm text-slate-700 list-disc list-inside">
+                <li>Share a public CV/portfolio link (Drive, GitHub, Behance, etc.).</li>
+                <li>Include latest academics and certifications.</li>
+                <li>Keep updates concise; revise anytime before review.</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-5 shadow-md">
+              <h3 className="text-base font-bold text-slate-900">What happens next?</h3>
+              <p className="mt-2 text-sm text-slate-700">
+                Once submitted, your status will change to <span className="font-semibold text-slate-900">In Review</span>. You’ll see feedback and eligibility updates here.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

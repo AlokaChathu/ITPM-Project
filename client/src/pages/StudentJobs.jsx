@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Navbar2 from '../components/Navbar2';
 
 function StudentJobs() {
   const { userData } = useContext(AppContent);
@@ -56,11 +57,12 @@ function StudentJobs() {
     }
   };
 
-  if (!userData || isLoading) return <div className='min-h-screen flex justify-center items-center bg-slate-50'><LoadingSpinner /></div>;
+  if (!userData || isLoading) return <div className='min-h-screen flex justify-center items-center bg-slate-50'>Page is Loading...</div>;
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8'>
-      <div className='max-w-6xl mx-auto'>
+    <div className='min-h-screen p-8'>
+      <Navbar2 />
+      <div className='max-w-[1050px] mx-auto my-10'>
         <button 
           onClick={() => navigate('/customer-home')}
           className='mb-6 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-2 transition'
@@ -76,15 +78,15 @@ function StudentJobs() {
           
           {/* Eligibility Badge */}
           <div className={`px-4 py-2 rounded-lg font-bold shadow-sm ${
-            isEligible ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+            isEligible ? 'bg-blue-700/60 text-white border border-green-200' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
           }`}>
-            {isEligible ? '✅ You are Eligible to Apply' : '⚠️ Pending Eligibility'}
+            {isEligible ? 'You are Eligible to Apply' : ' Pending Eligibility'}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map(job => (
-            <div key={job._id} className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-indigo-500 flex flex-col hover:-translate-y-1 transition-transform">
+            <div key={job._id} className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-indigo-400 flex flex-col hover:-translate-y-1 transition-transform">
               <div className="flex-grow">
                 <h3 className="text-xl font-bold text-slate-800">{job.title}</h3>
                 <p className="text-indigo-600 font-semibold mb-3">{job.company}</p>
@@ -101,7 +103,7 @@ function StudentJobs() {
                 onClick={() => handleApply(job._id)}
                 className={`w-full py-2.5 rounded-lg font-bold transition ${
                   isEligible 
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md cursor-pointer' 
+                    ? 'bg-indigo-500 text-white hover:bg-indigo-700 shadow-md cursor-pointer' 
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >

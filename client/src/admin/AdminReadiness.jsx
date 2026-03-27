@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/LoadingSpinner';
+import NavBarAdmin from '../components/NavbarAdmin';
 
 function AdminReadiness() {
   const [evaluations, setEvaluations] = useState([]);
@@ -86,7 +87,8 @@ function AdminReadiness() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <><NavBarAdmin/>
+    <div className="min-h-screen  p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-slate-800 mb-8">Internship Readiness Evaluations</h1>
 
@@ -192,6 +194,7 @@ function AdminReadiness() {
         )}
       </div>
     </div>
+    </>
   );
 }
 
