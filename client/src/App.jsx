@@ -16,6 +16,8 @@ import MyProfile from './pages/MyProfile'
 import CustomerHome from './pages/CustomerHome'
 import AdminReadiness from './admin/AdminReadiness';
 import StudentReadiness from './pages/StudentReadiness';
+import AdminJobs from './admin/AdminJobs';
+import StudentJobs from './pages/StudentJobs';
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
         <Route path='/admin/login' element={<AdminLogin/>}/>
         <Route path='/admin/home' element={<AdminHome/>}/>
         <Route path='/readiness' element={<StudentReadiness/>}/>
+        <Route path='/admin/jobs' element={<AdminJobs/>}/>
+        <Route path='/jobs' element={<StudentJobs/>}/>
 
       </Routes>
     </div>
