@@ -14,6 +14,7 @@ import AdminLogin from './admin/AdminLogin'
 import AdminHome from './admin/AdminHome'
 import MyProfile from './pages/MyProfile'
 import CustomerHome from './pages/CustomerHome'
+import AdminReadiness from './admin/AdminReadiness';
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
         <Route path='/reset-password' element={<ResetPassword/>}/>
         <Route path='/my-profile' element={<MyProfile/>}/>
         <Route path='/customer-home' element={<CustomerHome/>}/>
-        
+        <Route path='/admin/readiness' element={<AdminReadiness/>}/>
 
         {/* admin */}
 
