@@ -11,12 +11,12 @@ import {
 const readinessRouter = express.Router();
 
 // ---- Student Routes ----
-readinessRouter.post('/submit',  submitReadinessDetails);
-readinessRouter.get('/my-status',  getStudentReadiness);
+readinessRouter.post('/submit', submitReadinessDetails);
+readinessRouter.get('/my-status', userAuth, getStudentReadiness);
 
 // ---- Admin Routes ----
-readinessRouter.get('/all',  getAllEvaluations);
+readinessRouter.get('/all', getAllEvaluations);
 readinessRouter.get('/student/:studentId', getStudentReadiness);
-readinessRouter.put('/evaluate/:studentId',  evaluateStudent);
+readinessRouter.put('/evaluate/:studentId', evaluateStudent);
 
 export default readinessRouter;

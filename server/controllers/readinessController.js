@@ -2,23 +2,31 @@ import Readiness from "../models/Readiness.model.js";
 
 // [STUDENT] Submit CV and Academic details
 export const submitReadinessDetails = async (req, res) => {
-    const { cvUrl, academicPerformance } = req.body;
-    const studentId = req.userId; // Extracted from userAuth middleware
-
     try {
-        let readiness = await Readiness.findOne({ studentId });
+        const { cvUrl, academicPerformance, studentId } = req.body;
+        
+        // Prioritize the secure token ID, but fallback to the body ID if needed
+        const idToUse = req.userId || studentId;
+
+        if (!idToUse) {
+            return res.json({ success: false, message: "Authentication Error: Missing User ID." });
+        }
+
+        let readiness = await Readiness.findOne({ studentId: idToUse });
 
         if (readiness) {
-            // Update existing record
-            readiness.cvUrl = cvUrl || readiness.cvUrl;
-            readiness.academicPerformance = academicPerformance || readiness.academicPerformance;
-            readiness.status = 'In Review';
+            // Safely update (allows students to clear out their academic performance text)
+            if (cvUrl !== undefined) readiness.cvUrl = cvUrl;
+            if (academicPerformance !== undefined) readiness.academicPerformance = academicPerformance;
+            
+            // Anytime a student updates their CV, push them back to "In Review"
+            readiness.status = 'In Review'; 
             await readiness.save();
             return res.json({ success: true, message: "Details updated successfully", data: readiness });
         } else {
             // Create new record
             readiness = new Readiness({
-                studentId,
+                studentId: idToUse,
                 cvUrl,
                 academicPerformance,
                 status: 'In Review'
@@ -27,19 +35,18 @@ export const submitReadinessDetails = async (req, res) => {
             return res.json({ success: true, message: "Details submitted successfully", data: readiness });
         }
     } catch (error) {
+        console.error("Error in submitReadinessDetails:", error);
         res.json({ success: false, message: error.message });
     }
 };
 
 // [STUDENT/ADMIN] Get a specific student's readiness data
 export const getStudentReadiness = async (req, res) => {
-    // If student calls this, use their own token ID. If Admin calls it, use the URL parameter.
     const studentId = req.params.studentId || req.userId;
-
     try {
         const readiness = await Readiness.findOne({ studentId }).populate('studentId', 'name email phone age');
         if (!readiness) {
-            return res.json({ success: false, message: "No readiness profile found for this student" });
+            return res.json({ success: false, message: "No readiness profile found." });
         }
         res.json({ success: true, data: readiness });
     } catch (error) {
@@ -65,15 +72,15 @@ export const evaluateStudent = async (req, res) => {
     try {
         const readiness = await Readiness.findOne({ studentId });
         if (!readiness) {
-            return res.json({ success: false, message: "Readiness profile not found for this student. They need to submit their CV first." });
+            return res.json({ success: false, message: "Readiness profile not found." });
         }
 
-        // Only update fields that the admin passed in the request
-        if (skillGaps) readiness.skillGaps = skillGaps;
-        if (suggestedCourses) readiness.suggestedCourses = suggestedCourses;
-        if (interviewNotes) readiness.interviewNotes = interviewNotes;
-        if (status) readiness.status = status;
-        if (typeof isEligible === 'boolean') readiness.isEligible = isEligible;
+        // Safely update fields (Allows admin to delete notes or empty the courses array)
+        if (skillGaps !== undefined) readiness.skillGaps = skillGaps;
+        if (suggestedCourses !== undefined) readiness.suggestedCourses = suggestedCourses;
+        if (interviewNotes !== undefined) readiness.interviewNotes = interviewNotes;
+        if (status !== undefined) readiness.status = status;
+        if (isEligible !== undefined) readiness.isEligible = isEligible;
 
         await readiness.save();
         res.json({ success: true, message: "Evaluation updated successfully", data: readiness });

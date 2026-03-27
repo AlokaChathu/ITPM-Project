@@ -15,6 +15,7 @@ import AdminHome from './admin/AdminHome'
 import MyProfile from './pages/MyProfile'
 import CustomerHome from './pages/CustomerHome'
 import AdminReadiness from './admin/AdminReadiness';
+import StudentReadiness from './pages/StudentReadiness';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
 
         <Route path='/admin/login' element={<AdminLogin/>}/>
         <Route path='/admin/home' element={<AdminHome/>}/>
+        <Route path='/readiness' element={<StudentReadiness/>}/>
 
       </Routes>
     </div>
