@@ -1,10 +1,9 @@
 import React, { useContext } from "react";
-import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Logo from '../assets/TalenTracerLogo.png'
+import Logo from '../assets/TalenTracerLogo2.png'
 
 function Navbar() {
   const navigate = useNavigate();
@@ -85,7 +84,7 @@ function Navbar() {
       ) : (
         <button
           onClick={() => navigate("/login")}
-          className="flex items-center gap-2 border border-white/80 rounded-full px-10 py-2 text-white/80
+          className="flex items-center gap-2 border border-black/40 rounded-full px-10 py-2 text-black/60
         hover:bg-gray-100 hover:text-black transition-all cursor-pointer" 
         >
           Login 

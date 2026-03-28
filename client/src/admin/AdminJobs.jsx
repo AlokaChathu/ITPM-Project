@@ -123,11 +123,11 @@ function AdminJobs() {
     }
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;;
 
   return (
     <><NavBarAdmin />
-    <div className="min-h-screen  p-8">
+    <div className="min-h-screen  p-8 xl:mx-48">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Manage Internships</h1>

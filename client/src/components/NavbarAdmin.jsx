@@ -8,11 +8,17 @@ function NavbarAdmin() {
   const navigate = useNavigate();
 
     const logout = async () =>{
-        try {
-            navigate('/');
+        const confirmed = window.confirm("Are you sure you want to logout?");
+        if (!confirmed) return;
 
+        try {
+          axios.defaults.withCredentials = true;
+          await axios.get('http://localhost:4000/api/admin/logout');
+          toast.success('Logout Successful');
+          navigate('/admin/login');
         } catch (error) {
-            toast.error(error.message)
+          console.error(error.response?.data || error.message);
+          toast.error(`Error: ${error.message}`);
         }
     };
 
@@ -33,13 +39,13 @@ function NavbarAdmin() {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={viewDashboard}
-              className="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition"
+              className="cursor-pointer inline-flex items-center justify-center border-1  text-[18px] mr-3 font-semibold px-5 py-2 hover:bg-blue-100/20 rounded-xl  transition"
             >
               Dashboard
             </button>
             <button
               onClick={logout}
-              className="inline-flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition"
+              className="cursor-pointer inline-flex items-center justify-center   text-[18px]  rounded-xl border   px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100/30 transition"
             >
               Logout
             </button>

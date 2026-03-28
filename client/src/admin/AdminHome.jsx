@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, ClipboardCheck } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  ClipboardCheck, 
+  Briefcase, 
+  Users, 
+  LogOut, 
+  Search, 
+  Bell, 
+  Settings 
+} from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
-import Navbar2 from '../components/Navbar2';
 
 function AdminHome() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,87 +39,126 @@ function AdminHome() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-
-    <>
+    <div className="flex h-screen bg-[#f4f6f9] font-sans overflow-hidden">
       
-    
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 p-8">
-      <div className="max-w-5xl mx-auto mt-10">
+      {/* ================= LEFT SIDEBAR ================= */}
+      <aside className="w-64 bg-[#1e2330] text-slate-300 flex flex-col shadow-2xl z-20 flex-shrink-0">
+        
+        {/* Profile Section (Matches Reference Image) */}
+        <div className="p-6 flex items-center gap-4 border-b border-slate-700/50">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
+            A
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-sm">System Admin</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Administrator</p>
+          </div>
+        </div>
 
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-12 bg-white/20 backdrop-blur-lg shadow-lg rounded-3xl p-6 border border-white/30">
-          <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4 md:mb-0">
-            Admin Dashboard
-          </h1>
-          <button
-            onClick={logout}
-            className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow-md transition-transform transform hover:-translate-y-0.5 active:scale-95"
+        {/* Navigation Links */}
+        <nav className="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+          <p className="px-3 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Main Menu</p>
+
+          {/* Active Link (Dashboard) */}
+          <button 
+            onClick={() => navigate('/admin/home')} 
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-500/15 text-indigo-400 border-l-4 border-indigo-500 font-medium transition-colors"
           >
-            <LogOut className="w-5 h-5" /> Logout
+            <LayoutDashboard size={18} />
+            Dashboard
+          </button>
+
+          {/* Inactive Links */}
+          <button 
+            onClick={() => navigate('/admin/readiness')} 
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
+          >
+            <ClipboardCheck size={18} />
+            Internship Readiness
+          </button>
+
+          <button 
+            onClick={() => navigate('/admin/jobs')} 
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
+          >
+            <Briefcase size={18} />
+            Manage Internships
+          </button>
+
+          <button 
+            onClick={() => navigate('/admin/students')} 
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
+          >
+            <Users size={18} />
+            Student Directory
+          </button>
+        </nav>
+
+        {/* Logout Section */}
+        <div className="p-4 border-t border-slate-700/50">
+          <button 
+            onClick={logout} 
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-rose-500/10 text-rose-400 hover:text-rose-500 font-medium transition-colors"
+          >
+            <LogOut size={18} />
+            Logout
           </button>
         </div>
+      </aside>
 
-        {/* Dashboard Modules Grid */}
-        <h2 className="text-2xl font-bold text-blue-900 mb-6">System Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          {/* Internship Readiness Module Card */}
-          <div
-            onClick={() => navigate('/admin/readiness')}
-            className="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50 cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all group flex flex-col items-center text-center"
-          >
-            <div className="bg-blue-100 p-4 rounded-full text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors mb-4 shadow-inner">
-              <ClipboardCheck className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-700 transition-colors">
-              Internship Readiness
-            </h3>
-            <p className="text-slate-600 text-sm">
-              Review student CVs, evaluate academic performance, and approve internship eligibility.
-            </p>
+      {/* ================= RIGHT SIDE (MAIN CONTENT) ================= */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#f4f7f6]">
+        
+        {/* Top Header Bar (Search & Icons) */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+          
+          {/* Search Bar */}
+          <div className="flex items-center text-slate-400 bg-slate-100/80 px-4 py-2 rounded-full w-96 border border-slate-200/60 focus-within:border-indigo-300 focus-within:bg-white transition-all">
+            <Search size={18} />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="bg-transparent border-none outline-none ml-3 w-full text-sm text-slate-700 placeholder-slate-400" 
+            />
           </div>
 
-          {/* Job Board Module Card */}
-          <div
-            onClick={() => navigate('/admin/jobs')}
-            className="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50 cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all group flex flex-col items-center text-center"
-          >
-            <div className="bg-purple-100 p-4 rounded-full text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors mb-4 shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />
-              </svg>
+          {/* Right Side Icons */}
+          <div className="flex items-center gap-5 text-slate-400">
+            <Settings size={20} className="hover:text-slate-700 cursor-pointer transition-colors" />
+            <div className="relative cursor-pointer hover:text-slate-700 transition-colors">
+              <Bell size={20} />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+              </span>
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-purple-700 transition-colors">
-              Manage Internships
-            </h3>
-            <p className="text-slate-600 text-sm">
-              Post new internship opportunities and review student applications.
-            </p>
+          </div>
+        </header>
+
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto p-8">
+          
+          {/* Page Title */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
+            <p className="text-slate-500 text-sm mt-1">Welcome back. Here is what's happening today.</p>
           </div>
 
-          {/* Student Directory Module Card */}
-          <div 
-            onClick={() => navigate('/admin/students')}
-            className="bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50 cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all group flex flex-col items-center text-center"
-          >
-            <div className="bg-teal-100 p-4 rounded-full text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors mb-4 shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-              </svg>
+          {/* EMPTY PLACEHOLDER - As requested */}
+          <div className="border-2 border-dashed border-slate-300 rounded-2xl h-[65vh] flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
+            <div className="bg-white p-4 rounded-full shadow-sm mb-4 border border-slate-100">
+              <LayoutDashboard size={40} className="text-slate-300" />
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-teal-700 transition-colors">
-              Student Directory
-            </h3>
-            <p className="text-slate-600 text-sm">
-              View student portfolios, analyze skills, and send direct messages.
+            <p className="text-xl font-bold text-slate-600 mb-1">Right Side Main Content</p>
+            <p className="text-sm text-slate-400 max-w-sm text-center">
+              This area is kept completely empty for you to add your charts, tables, and widgets later.
             </p>
           </div>
 
         </div>
+      </main>
 
-      </div>
     </div>
-    </>
   );
 }
 
