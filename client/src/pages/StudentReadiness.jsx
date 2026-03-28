@@ -8,12 +8,12 @@ import Navbar from '../components/Navbar2';
 function StudentReadiness() {
   const { userData } = useContext(AppContent);
   const navigate = useNavigate();
-  
+
   // Readiness State
   const [readinessData, setReadinessData] = useState(null);
   const [isFetchingReadiness, setIsFetchingReadiness] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Form State
   const [cvUrl, setCvUrl] = useState('');
   const [academicPerformance, setAcademicPerformance] = useState('');
@@ -23,7 +23,7 @@ function StudentReadiness() {
     try {
       axios.defaults.withCredentials = true;
       const { data } = await axios.get('http://localhost:4000/api/readiness/my-status');
-      
+
       if (data.success) {
         setReadinessData(data.data);
         setCvUrl(data.data.cvUrl || '');
@@ -47,19 +47,38 @@ function StudentReadiness() {
   // Handle CV Submission
   const handleSubmitReadiness = async (e) => {
     e.preventDefault();
-    if (!cvUrl) {
+
+    // 1. Trim whitespace to prevent empty space submissions
+    const trimmedCvUrl = cvUrl.trim();
+    const trimmedAcademic = academicPerformance.trim();
+
+    // 2. Empty check
+    if (!trimmedCvUrl) {
       return toast.error("Please provide a CV link.");
+    }
+
+    // 3. Strict URL Format Validation (Regex)
+    const urlPattern = /^(https?:\/\/)?([\w\d\-_]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
+    if (!urlPattern.test(trimmedCvUrl)) {
+      return toast.error("Please enter a valid web URL (e.g., https://drive.google.com/...).");
+    }
+
+    // 4. Strict GPA / Numeric Validation (Between 0 and 4)
+    if (trimmedAcademic) {
+      const gpaValue = parseFloat(trimmedAcademic);
+      if (isNaN(gpaValue) || gpaValue < 0 || gpaValue > 4) {
+        return toast.error("Academic performance must be a valid number between 0 and 4 (e.g., 3.5).");
+      }
     }
 
     try {
       setIsSubmitting(true);
       axios.defaults.withCredentials = true;
-      
-      // ✅ Added studentId and userId from Context exactly as requested
+
       const payload = {
-        cvUrl,
-        academicPerformance,
-        studentId: userData.id, 
+        cvUrl: trimmedCvUrl,
+        academicPerformance: trimmedAcademic,
+        studentId: userData.id,
         userId: userData.id
       };
 
@@ -108,13 +127,12 @@ function StudentReadiness() {
 
           {readinessData && (
             <span
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border shadow-sm ${
-                readinessData.status === 'Ready'
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border shadow-sm ${readinessData.status === 'Ready'
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   : readinessData.status === 'In Review'
-                  ? 'bg-sky-50 text-sky-700 border-sky-200'
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
-              }`}
+                    ? 'bg-sky-50 text-sky-700 border-sky-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}
             >
               <span className="h-2 w-2 rounded-full bg-current" />
               {readinessData.status}
@@ -172,12 +190,15 @@ function StudentReadiness() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-slate-800 mb-2">Academic Performance summary</label>
+                      <label className="block text-sm font-semibold text-slate-800 mb-2">Academic Performance (GPA)</label>
                       <input
-                        type="text"
+                        type="number"
+                        min="0"
+                        max="4"
+                        step="0.01"
                         value={academicPerformance}
                         onChange={(e) => setAcademicPerformance(e.target.value)}
-                        placeholder="e.g., CGPA: 3.5, Expected Graduation: 2025"
+                        placeholder="e.g., 3.5"
                         className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
                       />
                     </div>
@@ -240,9 +261,8 @@ function StudentReadiness() {
                   )}
 
                   <div
-                    className={`p-4 rounded-2xl border-2 flex items-center justify-between gap-6 ${
-                      readinessData.isEligible ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
-                    }`}
+                    className={`p-4 rounded-2xl border-2 flex items-center justify-between gap-6 ${readinessData.isEligible ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
+                      }`}
                   >
                     <div>
                       <p className="font-bold text-slate-900">Internship Eligibility</p>
