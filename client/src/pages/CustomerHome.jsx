@@ -80,16 +80,19 @@ function CustomerHome() {
   }
 
   return (
-    <div className="flex h-screen bg-[#f4f7f6] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#f4f7f6] font-sans overflow-hidden" id='section2'>
       
       {/* ================= LEFT SIDEBAR ================= */}
       <aside className="w-64 bg-[#1e2330] text-slate-300 flex flex-col shadow-2xl z-20 flex-shrink-0">
         
         {/* Logo Section */}
-        <div className="h-20 flex items-center justify-center border-b border-slate-700/50 px-4">
+        <a href="/">
+          <div className="h-20 flex items-center justify-center border-b border-slate-700/50 px-4">
           {/* Fallback text if logo fails to load, otherwise shows Logo */}
           <img src={Logo} alt="TalentTracer" className="w-32 select-none filter brightness-0 invert opacity-90" />
         </div>
+        </a>
+        
 
         {/* Profile Section */}
         <div className="p-6 flex items-center gap-4 border-b border-slate-700/50">

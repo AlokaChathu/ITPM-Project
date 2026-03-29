@@ -6,6 +6,8 @@ function Header() {
 
     const {userData} = useContext(AppContent);
 
+    
+
   return (
     <div className='flex flex-col items-center mt-20 px-4 text-center
     text-gray-800'>
@@ -17,7 +19,7 @@ function Header() {
 
       <p className='mb-8 max-w-md text-white/80'>Register, log in, and complete your tasks within a fully secure system.</p>
 
-        <button className='border border-white/80 rounded-full px-8 py-2.5 text-white/80 hover:bg-gray-100 hover:text-black cursor-pointer transition-all'>Get Started</button>
+      <a href=""><button className='border border-white/80 rounded-full px-8 py-2.5 text-white/80 hover:bg-gray-100 hover:text-black cursor-pointer transition-all'>Get Started</button></a>
     </div>
   )
 }

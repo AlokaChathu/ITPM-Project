@@ -175,7 +175,7 @@ function AdminStudents() {
               {/* Message History Feed */}
               <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4 min-h-[250px] bg-slate-50 p-4 rounded-xl border inset-shadow">
                 {isHistoryLoading ? (
-                  <div className="flex justify-center py-10"><LoadingSpinner /></div>
+                  <div className="flex justify-center py-10"><div className="min-h-screen flex items-center justify-center">Loading...</div>;</div>
                 ) : messageHistory.length === 0 ? (
                   <p className="text-center text-slate-400 py-10">No messages sent to this student yet.</p>
                 ) : (
