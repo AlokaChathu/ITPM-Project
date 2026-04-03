@@ -20,9 +20,10 @@ function LectureDashboard() {
   const [companyFeedbacks, setCompanyFeedbacks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
   const [scheduleForm, setScheduleForm] = useState({
     studentId: '',
     date: '',
@@ -30,6 +31,10 @@ function LectureDashboard() {
     venue: '',
     notes: '',
     status: 'Scheduled'
+  });
+  const [reviewForm, setReviewForm] = useState({
+    mark: '',
+    feedback: ''
   });
   const navigate = useNavigate();
 
@@ -104,8 +109,42 @@ function LectureDashboard() {
     ]);
     
     setInternshipReports([
-      { id: 1, studentId: 1, studentName: 'John Doe', title: 'Web Development Internship', submittedDate: '2025-04-01', status: 'Pending Review' },
-      { id: 2, studentId: 2, studentName: 'Jane Smith', title: 'Mobile App Development', submittedDate: '2025-04-02', status: 'Approved' }
+      { 
+        id: 1, 
+        studentId: 1, 
+        studentName: 'John Doe', 
+        studentEmail: 'john@example.com',
+        internshipTitle: 'Web Development Internship', 
+        company: 'Tech Corp',
+        submittedDate: '2025-04-01', 
+        status: 'Pending Review',
+        reportContent: 'During my internship at Tech Corp, I worked on developing responsive web applications using React and Node.js. I contributed to three major projects and learned about agile development methodologies. The experience helped me improve my technical skills and understand professional work environments.',
+        mark: null
+      },
+      { 
+        id: 2, 
+        studentId: 2, 
+        studentName: 'Jane Smith', 
+        studentEmail: 'jane@example.com',
+        internshipTitle: 'Mobile App Development', 
+        company: 'Digital Solutions',
+        submittedDate: '2025-04-02', 
+        status: 'Approved',
+        reportContent: 'My internship at Digital Solutions focused on mobile app development using React Native. I developed two mobile applications and participated in the complete software development lifecycle. I gained valuable experience in mobile UI/UX design and app deployment.',
+        mark: 85
+      },
+      { 
+        id: 3, 
+        studentId: 3, 
+        studentName: 'Mike Johnson', 
+        studentEmail: 'mike@example.com',
+        internshipTitle: 'Data Science Internship', 
+        company: 'Analytics Pro',
+        submittedDate: '2025-04-03', 
+        status: 'Pending Review',
+        reportContent: 'At Analytics Pro, I worked on machine learning projects and data analysis tasks. I developed predictive models and created data visualizations. This internship enhanced my skills in Python, TensorFlow, and statistical analysis.',
+        mark: null
+      }
     ]);
     
     setCompanyFeedbacks([
@@ -161,14 +200,14 @@ function LectureDashboard() {
   const handleEditSchedule = (schedule) => {
     setSelectedSchedule(schedule);
     setScheduleForm({
-      studentId: schedule.studentId,
+      studentId: schedule.studentId.toString(),
       date: schedule.date,
       time: schedule.time,
       venue: schedule.venue || '',
       notes: schedule.notes || '',
       status: schedule.status
     });
-    setShowEditModal(true);
+    setShowScheduleModal(true);
   };
 
   const handleSaveSchedule = () => {
@@ -179,7 +218,7 @@ function LectureDashboard() {
 
     const student = students.find(s => s.id === parseInt(scheduleForm.studentId));
     
-    if (showEditModal && selectedSchedule) {
+    if (selectedSchedule) {
       // Update existing schedule
       setVivaSchedules(vivaSchedules.map(s => 
         s.id === selectedSchedule.id 
@@ -196,7 +235,6 @@ function LectureDashboard() {
           : s
       ));
       toast.success('Viva schedule updated successfully');
-      setShowEditModal(false);
     } else {
       // Create new schedule
       const newSchedule = {
@@ -211,8 +249,19 @@ function LectureDashboard() {
       };
       setVivaSchedules([...vivaSchedules, newSchedule]);
       toast.success('Viva scheduled successfully');
-      setShowScheduleModal(false);
     }
+    
+    // Reset form and close modal
+    setShowScheduleModal(false);
+    setSelectedSchedule(null);
+    setScheduleForm({
+      studentId: '',
+      date: '',
+      time: '',
+      venue: '',
+      notes: '',
+      status: 'Scheduled'
+    });
   };
 
   const handleDeleteSchedule = (scheduleId) => {
@@ -220,6 +269,63 @@ function LectureDashboard() {
       setVivaSchedules(vivaSchedules.filter(s => s.id !== scheduleId));
       toast.success('Viva schedule deleted successfully');
     }
+  };
+
+  const handleReviewReport = (report) => {
+    setSelectedReport(report);
+    setReviewForm({
+      mark: report.mark || '',
+      feedback: ''
+    });
+    setShowReviewModal(true);
+  };
+
+  const handleSaveReview = () => {
+    if (!reviewForm.mark || reviewForm.mark < 0 || reviewForm.mark > 100) {
+      toast.error('Please enter a valid mark between 0 and 100');
+      return;
+    }
+
+    // Update the report with mark and status
+    setInternshipReports(internshipReports.map(report => 
+      report.id === selectedReport.id 
+        ? {
+            ...report,
+            mark: parseInt(reviewForm.mark),
+            status: 'Approved',
+            feedback: reviewForm.feedback
+          }
+        : report
+    ));
+
+    toast.success(`Report reviewed and marked: ${reviewForm.mark}%`);
+    setShowReviewModal(false);
+    setSelectedReport(null);
+    setReviewForm({ mark: '', feedback: '' });
+  };
+
+  const handleRejectReport = () => {
+    if (!reviewForm.feedback) {
+      toast.error('Please provide feedback for rejection');
+      return;
+    }
+
+    // Update the report with rejected status
+    setInternshipReports(internshipReports.map(report => 
+      report.id === selectedReport.id 
+        ? {
+            ...report,
+            status: 'Rejected',
+            feedback: reviewForm.feedback,
+            mark: null
+          }
+        : report
+    ));
+
+    toast.success('Report rejected with feedback');
+    setShowReviewModal(false);
+    setSelectedReport(null);
+    setReviewForm({ mark: '', feedback: '' });
   };
 
   const renderOverview = () => (
@@ -468,12 +574,36 @@ function LectureDashboard() {
           <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{report.title}</h3>
-                <p className="text-sm text-gray-600 mt-1">by {report.studentName}</p>
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span>Submitted: {report.submittedDate}</span>
+                {/* Student Name as Primary Title */}
+                <h3 className="font-semibold text-lg text-gray-900 mb-1">{report.studentName}</h3>
+                
+                {/* Internship Details */}
+                <div className="space-y-1 mb-3">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">Internship:</span> {report.internshipTitle}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">Company:</span> {report.company}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Submitted:</span> {report.submittedDate}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Email:</span> {report.studentEmail}
+                  </p>
                 </div>
+
+                {/* Show mark if already graded */}
+                {report.mark !== null && (
+                  <div className="mb-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <Award size={14} className="mr-1" />
+                      Mark: {report.mark}%
+                    </span>
+                  </div>
+                )}
               </div>
+              
               <div className="flex items-center gap-3">
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   report.status === 'Approved' 
@@ -484,11 +614,14 @@ function LectureDashboard() {
                 }`}>
                   {report.status}
                 </span>
-                <button className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium">
+                
+                {/* Review Button */}
+                <button 
+                  onClick={() => handleReviewReport(report)}
+                  className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
+                >
+                  <FileText size={14} />
                   Review
-                </button>
-                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                  <FileText size={16} />
                 </button>
               </div>
             </div>
@@ -670,7 +803,7 @@ function LectureDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
-              {showEditModal ? 'Edit Viva Schedule' : 'Schedule New Viva'}
+              {selectedSchedule ? 'Edit Viva Schedule' : 'Schedule New Viva'}
             </h3>
             <div className="space-y-4">
               <div>
@@ -744,7 +877,15 @@ function LectureDashboard() {
                 <button
                   onClick={() => {
                     setShowScheduleModal(false);
-                    setShowEditModal(false);
+                    setSelectedSchedule(null);
+                    setScheduleForm({
+                      studentId: '',
+                      date: '',
+                      time: '',
+                      venue: '',
+                      notes: '',
+                      status: 'Scheduled'
+                    });
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
@@ -754,7 +895,7 @@ function LectureDashboard() {
                   onClick={handleSaveSchedule}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
-                  {showEditModal ? 'Update' : 'Schedule'}
+                  {selectedSchedule ? 'Update' : 'Schedule'}
                 </button>
               </div>
             </div>
@@ -762,91 +903,133 @@ function LectureDashboard() {
         </div>
       )}
 
-      {/* Edit Viva Modal */}
-      {showEditModal && (
+      {/* Report Review Modal */}
+      {showReviewModal && selectedReport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Edit Viva Schedule</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
-                <select
-                  value={scheduleForm.studentId}
-                  onChange={(e) => setScheduleForm({...scheduleForm, studentId: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {students
-                    .filter(student => student.status === 'Internship Completed')
-                    .map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} - {student.email}
-                      </option>
-                    ))}
-                </select>
+          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Review Internship Report</h3>
+              
+              {/* Student Information */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Student Name</p>
+                    <p className="font-medium text-gray-900">{selectedReport.studentName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="font-medium text-gray-900">{selectedReport.studentEmail}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Internship</p>
+                    <p className="font-medium text-gray-900">{selectedReport.internshipTitle}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Company</p>
+                    <p className="font-medium text-gray-900">{selectedReport.company}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Submitted Date</p>
+                    <p className="font-medium text-gray-900">{selectedReport.submittedDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Current Status</p>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                      selectedReport.status === 'Approved' 
+                        ? 'bg-green-100 text-green-800'
+                        : selectedReport.status === 'Rejected'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {selectedReport.status}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-                <input
-                  type="date"
-                  value={scheduleForm.date}
-                  onChange={(e) => setScheduleForm({...scheduleForm, date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+
+              {/* Report Content */}
+              <div className="mb-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-3">Report Content</h4>
+                <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                  <p className="text-gray-700 whitespace-pre-wrap">{selectedReport.reportContent}</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time *</label>
-                <input
-                  type="time"
-                  value={scheduleForm.time}
-                  onChange={(e) => setScheduleForm({...scheduleForm, time: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Room 101, Main Building"
-                  value={scheduleForm.venue}
-                  onChange={(e) => setScheduleForm({...scheduleForm, venue: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={scheduleForm.status}
-                  onChange={(e) => setScheduleForm({...scheduleForm, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Scheduled">Scheduled</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                <textarea
-                  placeholder="Additional notes or instructions"
-                  value={scheduleForm.notes}
-                  onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveSchedule}
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Update
-                </button>
+
+              {/* Review Form */}
+              <div className="border-t pt-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Evaluation</h4>
+                
+                <div className="space-y-4">
+                  {/* Mark Input */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mark (out of 100%) *
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={reviewForm.mark}
+                        onChange={(e) => setReviewForm({...reviewForm, mark: e.target.value})}
+                        placeholder="Enter mark (0-100)"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={reviewForm.mark || 0}
+                          onChange={(e) => setReviewForm({...reviewForm, mark: e.target.value})}
+                          className="w-32"
+                        />
+                        <span className="text-sm font-medium text-gray-700 w-12">{reviewForm.mark || 0}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Feedback */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Feedback (optional)
+                    </label>
+                    <textarea
+                      value={reviewForm.feedback}
+                      onChange={(e) => setReviewForm({...reviewForm, feedback: e.target.value})}
+                      placeholder="Provide feedback for the student..."
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setShowReviewModal(false);
+                        setSelectedReport(null);
+                        setReviewForm({ mark: '', feedback: '' });
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleRejectReport}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Reject Report
+                    </button>
+                    <button
+                      onClick={handleSaveReview}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                    >
+                      Approve & Mark
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
