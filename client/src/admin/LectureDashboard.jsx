@@ -19,6 +19,7 @@ function LectureDashboard() {
   const [internshipReports, setInternshipReports] = useState([]);
   const [companyFeedbacks, setCompanyFeedbacks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [reportStatusFilter, setReportStatusFilter] = useState('All Status');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -368,78 +369,98 @@ function LectureDashboard() {
     </div>
   );
 
-  const renderStudents = () => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Students</h2>
-        <div className="flex gap-3">
-          <div className="relative">
-            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search students..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+  const renderStudents = () => {
+    // Filter students based on search term match
+    const filteredStudents = searchTerm 
+      ? students.filter(student => 
+          student.name.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
+          student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.phone.includes(searchTerm)
+        )
+      : students;
+
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Students</h2>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search students..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              />
+            </div>
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
+              <Plus size={18} />
+              Add Student
+            </button>
           </div>
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
-            <Plus size={18} />
-            Add Student
-          </button>
+        </div>
+        
+        {searchTerm && filteredStudents.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <Search size={48} className="mx-auto mb-4 text-gray-300" />
+            <p>No students found matching "{searchTerm}"</p>
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Name</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Email</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Phone</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStudents.map((student) => (
+                <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 font-semibold text-sm">
+                          {student.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <span className="font-medium text-gray-900">{student.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-gray-600">{student.email}</td>
+                  <td className="py-3 px-4 text-gray-600">{student.phone}</td>
+                  <td className="py-3 px-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      student.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                      student.status === 'Internship Completed' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {student.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <button className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                        <Edit size={16} />
+                      </button>
+                      <button className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-      
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Phone</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-3 px-4 font-medium text-gray-900">{student.name}</td>
-                <td className="py-3 px-4 text-gray-600">{student.email}</td>
-                <td className="py-3 px-4 text-gray-600">{student.phone}</td>
-                <td className="py-3 px-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    student.status === 'Active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {student.status}
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleScheduleViva(student)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Schedule Viva"
-                    >
-                      <Calendar size={16} />
-                    </button>
-                    <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Edit">
-                      <Edit size={16} />
-                    </button>
-                    <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderVivaSchedules = () => (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -555,81 +576,99 @@ function LectureDashboard() {
     </div>
   );
 
-  const renderInternshipReports = () => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Internship Reports</h2>
-        <div className="flex gap-2">
-          <select className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>All Status</option>
-            <option>Pending Review</option>
-            <option>Approved</option>
-            <option>Rejected</option>
-          </select>
-        </div>
-      </div>
-      
-      <div className="space-y-4">
-        {internshipReports.map((report) => (
-          <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                {/* Student Name as Primary Title */}
-                <h3 className="font-semibold text-lg text-gray-900 mb-1">{report.studentName}</h3>
-                
-                {/* Internship Details */}
-                <div className="space-y-1 mb-3">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-medium">Internship:</span> {report.internshipTitle}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-medium">Company:</span> {report.company}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Submitted:</span> {report.submittedDate}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Email:</span> {report.studentEmail}
-                  </p>
-                </div>
+  const renderInternshipReports = () => {
+    // Filter reports based on status
+    const filteredReports = reportStatusFilter === 'All Status' 
+      ? internshipReports 
+      : internshipReports.filter(report => report.status === reportStatusFilter);
 
-                {/* Show mark if already graded */}
-                {report.mark !== null && (
-                  <div className="mb-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      <Award size={14} className="mr-1" />
-                      Mark: {report.mark}%
-                    </span>
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Internship Reports</h2>
+          <div className="flex gap-2">
+            <select 
+              value={reportStatusFilter}
+              onChange={(e) => setReportStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option>All Status</option>
+              <option>Pending Review</option>
+              <option>Approved</option>
+              <option>Rejected</option>
+            </select>
+          </div>
+        </div>
+        
+        {reportStatusFilter !== 'All Status' && filteredReports.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <FileText size={48} className="mx-auto mb-4 text-gray-300" />
+            <p>No reports found with status "{reportStatusFilter}"</p>
+          </div>
+        )}
+        
+        <div className="space-y-4">
+          {filteredReports.map((report) => (
+            <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  {/* Student Name as Primary Title */}
+                  <h3 className="font-semibold text-lg text-gray-900 mb-1">{report.studentName}</h3>
+                  
+                  {/* Internship Details */}
+                  <div className="space-y-1 mb-3">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Internship:</span> {report.internshipTitle}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Company:</span> {report.company}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Submitted:</span> {report.submittedDate}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Email:</span> {report.studentEmail}
+                    </p>
                   </div>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  report.status === 'Approved' 
-                    ? 'bg-green-100 text-green-800'
-                    : report.status === 'Rejected'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {report.status}
-                </span>
+
+                  {/* Show mark if already graded */}
+                  {report.mark !== null && (
+                    <div className="mb-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <Award size={14} className="mr-1" />
+                        Mark: {report.mark}%
+                      </span>
+                    </div>
+                  )}
+                </div>
                 
-                {/* Review Button */}
-                <button 
-                  onClick={() => handleReviewReport(report)}
-                  className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
-                >
-                  <FileText size={14} />
-                  Review
-                </button>
+                <div className="flex items-center gap-3">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    report.status === 'Approved' 
+                      ? 'bg-green-100 text-green-800'
+                      : report.status === 'Rejected'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {report.status}
+                  </span>
+                  
+                  {/* Review Button */}
+                  <button 
+                    onClick={() => handleReviewReport(report)}
+                    className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
+                  >
+                    <FileText size={14} />
+                    Review
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderCompanyFeedbacks = () => (
     <div className="bg-white rounded-xl shadow-lg p-6">
