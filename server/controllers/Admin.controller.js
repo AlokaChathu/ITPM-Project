@@ -115,3 +115,29 @@ export const logout = (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+// Verify Admin
+export const verifyAdmin = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.adminId).select("-password");
+    if (!admin) {
+      return res.status(401).json({ success: false, message: "Admin not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Admin verified successfully",
+      data: {
+        admin_id: admin.admin_id,
+        fullName: admin.fullName,
+        email: admin.email,
+        role: admin.role,
+        phoneNumber: admin.phoneNumber,
+        id: admin._id
+      }
+    });
+  } catch (error) {
+    console.error("Error in verifyAdmin:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
