@@ -20,7 +20,17 @@ function LectureDashboard() {
   const [companyFeedbacks, setCompanyFeedbacks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [scheduleForm, setScheduleForm] = useState({
+    studentId: '',
+    date: '',
+    time: '',
+    venue: '',
+    notes: '',
+    status: 'Scheduled'
+  });
   const navigate = useNavigate();
 
   // Color scheme: 60% Primary (Blue), 30% Secondary (Teal), 10% Accent (Orange)
@@ -64,14 +74,33 @@ function LectureDashboard() {
   const fetchDashboardData = async () => {
     // Mock data - replace with actual API calls
     setStudents([
-      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', status: 'Active' },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '098-765-4321', status: 'Active' },
-      { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '555-123-4567', status: 'Pending' }
+      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', status: 'Internship Completed' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '098-765-4321', status: 'Internship Completed' },
+      { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '555-123-4567', status: 'Internship Completed' },
+      { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '777-888-9999', status: 'In Progress' }
     ]);
     
     setVivaSchedules([
-      { id: 1, studentId: 1, studentName: 'John Doe', date: '2025-04-05', time: '10:00 AM', status: 'Scheduled' },
-      { id: 2, studentId: 2, studentName: 'Jane Smith', date: '2025-04-06', time: '2:00 PM', status: 'Completed' }
+      { 
+        id: 1, 
+        studentId: 1, 
+        studentName: 'John Doe', 
+        date: '2025-04-05', 
+        time: '10:00 AM', 
+        venue: 'Room 101, Main Building',
+        notes: 'Bring project documentation',
+        status: 'Scheduled' 
+      },
+      { 
+        id: 2, 
+        studentId: 2, 
+        studentName: 'Jane Smith', 
+        date: '2025-04-06', 
+        time: '2:00 PM', 
+        venue: 'Conference Hall A',
+        notes: 'Final presentation',
+        status: 'Completed' 
+      }
     ]);
     
     setInternshipReports([
@@ -106,7 +135,84 @@ function LectureDashboard() {
 
   const handleScheduleViva = (student) => {
     setSelectedStudent(student);
+    setScheduleForm({
+      studentId: student.id,
+      date: '',
+      time: '',
+      venue: '',
+      notes: '',
+      status: 'Scheduled'
+    });
     setShowScheduleModal(true);
+  };
+
+  const handleOpenScheduleModal = () => {
+    setScheduleForm({
+      studentId: '',
+      date: '',
+      time: '',
+      venue: '',
+      notes: '',
+      status: 'Scheduled'
+    });
+    setShowScheduleModal(true);
+  };
+
+  const handleEditSchedule = (schedule) => {
+    setSelectedSchedule(schedule);
+    setScheduleForm({
+      studentId: schedule.studentId,
+      date: schedule.date,
+      time: schedule.time,
+      venue: schedule.venue || '',
+      notes: schedule.notes || '',
+      status: schedule.status
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveSchedule = () => {
+    if (!scheduleForm.studentId || !scheduleForm.date || !scheduleForm.time || !scheduleForm.venue) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    const student = students.find(s => s.id === parseInt(scheduleForm.studentId));
+    
+    if (showEditModal && selectedSchedule) {
+      // Update existing schedule
+      setVivaSchedules(vivaSchedules.map(s => 
+        s.id === selectedSchedule.id 
+          ? {
+              ...s,
+              studentId: parseInt(scheduleForm.studentId),
+              studentName: student.name,
+              date: scheduleForm.date,
+              time: scheduleForm.time,
+              venue: scheduleForm.venue,
+              notes: scheduleForm.notes,
+              status: scheduleForm.status
+            }
+          : s
+      ));
+      toast.success('Viva schedule updated successfully');
+      setShowEditModal(false);
+    } else {
+      // Create new schedule
+      const newSchedule = {
+        id: vivaSchedules.length + 1,
+        studentId: parseInt(scheduleForm.studentId),
+        studentName: student.name,
+        date: scheduleForm.date,
+        time: scheduleForm.time,
+        venue: scheduleForm.venue,
+        notes: scheduleForm.notes,
+        status: scheduleForm.status
+      };
+      setVivaSchedules([...vivaSchedules, newSchedule]);
+      toast.success('Viva scheduled successfully');
+      setShowScheduleModal(false);
+    }
   };
 
   const handleDeleteSchedule = (scheduleId) => {
@@ -114,11 +220,6 @@ function LectureDashboard() {
       setVivaSchedules(vivaSchedules.filter(s => s.id !== scheduleId));
       toast.success('Viva schedule deleted successfully');
     }
-  };
-
-  const handleEditSchedule = (schedule) => {
-    // Implement edit functionality
-    toast.info('Edit functionality coming soon');
   };
 
   const renderOverview = () => (
@@ -238,55 +339,112 @@ function LectureDashboard() {
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Viva Schedules</h2>
-        <button className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors flex items-center gap-2">
+        <button 
+          onClick={handleOpenScheduleModal}
+          className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors flex items-center gap-2"
+        >
           <Plus size={18} />
           Schedule Viva
         </button>
       </div>
       
-      <div className="space-y-4">
-        {vivaSchedules.map((schedule) => (
-          <div key={schedule.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-center">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{schedule.studentName}</h3>
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={14} />
-                    {schedule.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                    {schedule.time}
-                  </span>
+      {/* Students who completed internship */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">Students Ready for Viva</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {students
+            .filter(student => student.status === 'Internship Completed')
+            .filter(student => !vivaSchedules.some(schedule => schedule.studentId === student.id))
+            .map((student) => (
+              <div key={student.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{student.name}</h4>
+                    <p className="text-sm text-gray-600">{student.email}</p>
+                    <p className="text-sm text-gray-600">{student.phone}</p>
+                    <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                      {student.status}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleScheduleViva(student)}
+                    className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                    title="Schedule Viva"
+                  >
+                    <Calendar size={16} />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  schedule.status === 'Completed' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {schedule.status}
-                </span>
-                <button
-                  onClick={() => handleEditSchedule(schedule)}
-                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                  title="Edit Schedule"
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  onClick={() => handleDeleteSchedule(schedule.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete Schedule"
-                >
-                  <Trash2 size={16} />
-                </button>
+            ))}
+        </div>
+      </div>
+
+      {/* Scheduled Vivas */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">Scheduled Vivas</h3>
+        <div className="space-y-4">
+          {vivaSchedules.length > 0 ? (
+            vivaSchedules.map((schedule) => (
+              <div key={schedule.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{schedule.studentName}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <Calendar size={14} />
+                        {schedule.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={14} />
+                        {schedule.time}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Building size={14} />
+                        {schedule.venue}
+                      </span>
+                      {schedule.notes && (
+                        <span className="flex items-center gap-1">
+                          <FileText size={14} />
+                          {schedule.notes}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      schedule.status === 'Completed' 
+                        ? 'bg-green-100 text-green-800' 
+                        : schedule.status === 'Cancelled'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {schedule.status}
+                    </span>
+                    <button
+                      onClick={() => handleEditSchedule(schedule)}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Edit Schedule"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSchedule(schedule.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Schedule"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No viva schedules yet. Schedule your first viva to get started.</p>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -508,41 +666,186 @@ function LectureDashboard() {
       </div>
 
       {/* Schedule Viva Modal */}
-      {showScheduleModal && selectedStudent && (
+      {showScheduleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Schedule Viva for {selectedStudent.name}</h3>
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">
+              {showEditModal ? 'Edit Viva Schedule' : 'Schedule New Viva'}
+            </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student *</label>
+                <select
+                  value={scheduleForm.studentId}
+                  onChange={(e) => setScheduleForm({...scheduleForm, studentId: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select a student</option>
+                  {students
+                    .filter(student => student.status === 'Internship Completed')
+                    .map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.name} - {student.email}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
                 <input
                   type="date"
+                  value={scheduleForm.date}
+                  onChange={(e) => setScheduleForm({...scheduleForm, date: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Time *</label>
                 <input
                   type="time"
+                  value={scheduleForm.time}
+                  onChange={(e) => setScheduleForm({...scheduleForm, time: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Room 101, Main Building"
+                  value={scheduleForm.venue}
+                  onChange={(e) => setScheduleForm({...scheduleForm, venue: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={scheduleForm.status}
+                  onChange={(e) => setScheduleForm({...scheduleForm, status: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  placeholder="Additional notes or instructions"
+                  value={scheduleForm.notes}
+                  onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
+                  rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="flex gap-3 pt-4">
                 <button
-                  onClick={() => setShowScheduleModal(false)}
+                  onClick={() => {
+                    setShowScheduleModal(false);
+                    setShowEditModal(false);
+                  }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // Handle schedule creation
-                    setShowScheduleModal(false);
-                    toast.success('Viva scheduled successfully');
-                  }}
+                  onClick={handleSaveSchedule}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
-                  Schedule
+                  {showEditModal ? 'Update' : 'Schedule'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Viva Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Edit Viva Schedule</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
+                <select
+                  value={scheduleForm.studentId}
+                  onChange={(e) => setScheduleForm({...scheduleForm, studentId: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {students
+                    .filter(student => student.status === 'Internship Completed')
+                    .map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.name} - {student.email}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                <input
+                  type="date"
+                  value={scheduleForm.date}
+                  onChange={(e) => setScheduleForm({...scheduleForm, date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Time *</label>
+                <input
+                  type="time"
+                  value={scheduleForm.time}
+                  onChange={(e) => setScheduleForm({...scheduleForm, time: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Room 101, Main Building"
+                  value={scheduleForm.venue}
+                  onChange={(e) => setScheduleForm({...scheduleForm, venue: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={scheduleForm.status}
+                  onChange={(e) => setScheduleForm({...scheduleForm, status: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  placeholder="Additional notes or instructions"
+                  value={scheduleForm.notes}
+                  onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSchedule}
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Update
                 </button>
               </div>
             </div>
