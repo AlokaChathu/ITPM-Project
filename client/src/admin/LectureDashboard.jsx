@@ -22,9 +22,16 @@ function LectureDashboard() {
   const [reportStatusFilter, setReportStatusFilter] = useState('All Status');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showGradingModal, setShowGradingModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [selectedGradingStudent, setSelectedGradingStudent] = useState(null);
+  const [gradingForm, setGradingForm] = useState({
+    vivaScore: '',
+    finalScore: 0,
+    finalGrade: ''
+  });
   const [scheduleForm, setScheduleForm] = useState({
     studentId: '',
     date: '',
@@ -80,10 +87,10 @@ function LectureDashboard() {
   const fetchDashboardData = async () => {
     // Mock data - replace with actual API calls
     setStudents([
-      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', status: 'Internship Completed' },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '098-765-4321', status: 'Internship Completed' },
-      { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '555-123-4567', status: 'Internship Completed' },
-      { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '777-888-9999', status: 'In Progress' }
+      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', status: 'Internship Completed', reportMark: 85, companyRating: 4.5, vivaScore: 88, finalScore: 87.3, finalGrade: 'A' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '098-765-4321', status: 'Internship Completed', reportMark: 92, companyRating: 4.8, vivaScore: 90, finalScore: 90.8, finalGrade: 'A+' },
+      { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '555-123-4567', status: 'Internship Completed', reportMark: null, companyRating: 4.2, vivaScore: null, finalScore: null, finalGrade: null },
+      { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '777-888-9999', status: 'In Progress', reportMark: null, companyRating: null, vivaScore: null, finalScore: null, finalGrade: null }
     ]);
     
     setVivaSchedules([
@@ -329,6 +336,79 @@ function LectureDashboard() {
     setReviewForm({ mark: '', feedback: '' });
   };
 
+  const handleAssignGrade = (student) => {
+    setSelectedGradingStudent(student);
+    
+    // Auto-fill report mark and company rating
+    const report = internshipReports.find(r => r.studentId === student.id && r.mark !== null);
+    const feedback = companyFeedbacks.find(f => f.studentId === student.id);
+    
+    setGradingForm({
+      vivaScore: student.vivaScore || '',
+      reportMark: report ? report.mark : '',
+      companyRating: feedback ? feedback.rating * 20 : '', // Convert 5-point to 100-point scale
+      finalScore: student.finalScore || 0,
+      finalGrade: student.finalGrade || ''
+    });
+    setShowGradingModal(true);
+  };
+
+  const calculateFinalScore = (vivaScore, reportMark, companyRating) => {
+    // Weightage: Viva 40%, Report 40%, Company 20%
+    const vivaWeight = 0.4;
+    const reportWeight = 0.4;
+    const companyWeight = 0.2;
+    
+    return (vivaScore * vivaWeight) + (reportMark * reportWeight) + (companyRating * companyWeight);
+  };
+
+  const calculateGrade = (score) => {
+    if (score >= 95) return 'A+';
+    if (score >= 90) return 'A';
+    if (score >= 85) return 'B+';
+    if (score >= 80) return 'B';
+    if (score >= 75) return 'C+';
+    if (score >= 70) return 'C';
+    if (score >= 65) return 'D+';
+    if (score >= 60) return 'D';
+    return 'F';
+  };
+
+  const handleSaveGrade = () => {
+    if (!gradingForm.vivaScore || !gradingForm.reportMark || !gradingForm.companyRating) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    const finalScore = calculateFinalScore(
+      parseFloat(gradingForm.vivaScore),
+      parseFloat(gradingForm.reportMark),
+      parseFloat(gradingForm.companyRating)
+    );
+
+    const finalGrade = calculateGrade(finalScore);
+
+    // Update student with grading information
+    setStudents(students.map(student => 
+      student.id === selectedGradingStudent.id 
+        ? {
+            ...student,
+            vivaScore: parseFloat(gradingForm.vivaScore),
+            reportMark: parseFloat(gradingForm.reportMark),
+            companyRating: parseFloat(gradingForm.companyRating) / 20, // Convert back to 5-point scale
+            finalScore: finalScore,
+            finalGrade: finalGrade,
+            status: 'Graded'
+          }
+        : student
+    ));
+
+    toast.success(`Grade assigned: ${finalGrade} (${finalScore.toFixed(1)}%)`);
+    setShowGradingModal(false);
+    setSelectedGradingStudent(null);
+    setGradingForm({ vivaScore: '', finalScore: 0, finalGrade: '' });
+  };
+
   const renderOverview = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
@@ -438,6 +518,7 @@ function LectureDashboard() {
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       student.status === 'Active' ? 'bg-green-100 text-green-800' : 
                       student.status === 'Internship Completed' ? 'bg-blue-100 text-blue-800' :
+                      student.status === 'Graded' ? 'bg-purple-100 text-purple-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
                       {student.status}
@@ -713,58 +794,73 @@ function LectureDashboard() {
     </div>
   );
 
-  const renderFinalGrading = () => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Final Grading</h2>
-        <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2">
-          <Award size={18} />
-          Grade Student
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {students.map((student) => (
-          <div key={student.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="font-semibold text-gray-900">{student.name}</h3>
-                <p className="text-sm text-gray-600">{student.email}</p>
+  const renderFinalGrading = () => {
+    // Filter students who completed internship
+    const completedStudents = students.filter(student => student.status === 'Internship Completed' || student.status === 'Graded');
+    
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Final Grading</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {completedStudents.map((student) => (
+            <div key={student.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                  <p className="text-sm text-gray-600">{student.email}</p>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  student.status === 'Graded' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {student.status}
+                </span>
               </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                student.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {student.status}
-              </span>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Viva Score:</span>
+                  <span className="font-medium">{student.vivaScore || '-'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Report Score:</span>
+                  <span className="font-medium">{student.reportMark || '-'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Company Rating:</span>
+                  <span className="font-medium">{student.companyRating ? `${student.companyRating}/5` : '-'}</span>
+                </div>
+                <div className="flex justify-between text-sm font-semibold pt-2 border-t">
+                  <span>Final Score:</span>
+                  <span className="text-orange-600">{student.finalScore ? `${student.finalScore.toFixed(1)}%` : '-'}</span>
+                </div>
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>Final Grade:</span>
+                  <span className="text-orange-600">{student.finalGrade || '-'}</span>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => student.status === 'Graded' ? handleAssignGrade(student) : handleAssignGrade(student)}
+                className="w-full mt-3 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm"
+              >
+                {student.status === 'Graded' ? 'Edit Grade' : 'Assign Grade'}
+              </button>
             </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Viva Score:</span>
-                <span className="font-medium">-</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Report Score:</span>
-                <span className="font-medium">-</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Company Rating:</span>
-                <span className="font-medium">-</span>
-              </div>
-              <div className="flex justify-between text-sm font-semibold pt-2 border-t">
-                <span>Final Grade:</span>
-                <span className="text-orange-600">-</span>
-              </div>
+          ))}
+          
+          {completedStudents.length === 0 && (
+            <div className="col-span-full text-center py-8 text-gray-500">
+              <Award size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No students have completed their internship yet.</p>
             </div>
-            
-            <button className="w-full mt-3 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm">
-              Assign Grade
-            </button>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -1069,6 +1165,140 @@ function LectureDashboard() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grading Modal */}
+      {showGradingModal && selectedGradingStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              {selectedGradingStudent.finalGrade ? 'Edit Grade' : 'Assign Grade'} - {selectedGradingStudent.name}
+            </h3>
+            
+            {/* Student Information */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Student Name</p>
+                  <p className="font-medium text-gray-900">{selectedGradingStudent.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Email</p>
+                  <p className="font-medium text-gray-900">{selectedGradingStudent.email}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Grading Form */}
+            <div className="space-y-6">
+              {/* Report Mark (Auto-filled) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Report Score (out of 100) *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={gradingForm.reportMark}
+                  onChange={(e) => setGradingForm({...gradingForm, reportMark: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Auto-filled from Reports section"
+                />
+              </div>
+
+              {/* Company Rating (Auto-filled) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Rating (out of 100) *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={gradingForm.companyRating}
+                  onChange={(e) => setGradingForm({...gradingForm, companyRating: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Auto-filled from Company Feedback"
+                />
+              </div>
+
+              {/* Viva Score (Manual Entry) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Viva Score (out of 100) *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={gradingForm.vivaScore}
+                  onChange={(e) => {
+                    const vivaScore = e.target.value;
+                    const finalScore = calculateFinalScore(
+                      parseFloat(vivaScore || 0),
+                      parseFloat(gradingForm.reportMark || 0),
+                      parseFloat(gradingForm.companyRating || 0)
+                    );
+                    const finalGrade = calculateGrade(finalScore);
+                    
+                    setGradingForm({
+                      ...gradingForm,
+                      vivaScore,
+                      finalScore,
+                      finalGrade
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+              </div>
+
+              {/* Auto-calculated Results */}
+              {(gradingForm.vivaScore && gradingForm.reportMark && gradingForm.companyRating) && (
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Calculated Results</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Final Score</p>
+                      <p className="text-lg font-bold text-blue-600">
+                        {gradingForm.finalScore.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Final Grade</p>
+                      <p className="text-lg font-bold text-blue-600">
+                        {gradingForm.finalGrade}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Weightage: Viva 40% + Report 40% + Company 20%
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowGradingModal(false);
+                    setSelectedGradingStudent(null);
+                    setGradingForm({ vivaScore: '', finalScore: 0, finalGrade: '' });
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveGrade}
+                  className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                >
+                  {selectedGradingStudent.finalGrade ? 'Update Grade' : 'Assign Grade'}
+                </button>
               </div>
             </div>
           </div>
