@@ -13,6 +13,7 @@ import AdminRegister from "./admin/AdminRegister";
 import MyProfile from "./pages/MyProfile";
 import CustomerHome from "./pages/CustomerHome";
 import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 function App() {
@@ -37,10 +38,7 @@ function App() {
             </AdminRouteGuard>
           }
         >
-          <Route
-            index
-            element={<p className="text-slate-600">Admin panel shell — add dashboard page next.</p>}
-          />
+          <Route index element={<AdminDashboard />} />
         </Route>
         <Route path="/admin" element={<Navigate to="/admin/home" replace />} />
       </Routes>
