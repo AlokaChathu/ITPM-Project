@@ -1,18 +1,22 @@
 import express from "express";
 import cors from "cors";
-import 'dotenv/config';
+import "dotenv/config";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/mongodb.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
-import adminRouter from './routes/Admin.route.js'
+import adminRouter from "./routes/Admin.route.js";
+import readinessRouter from "./routes/readinessRoutes.js";
+import jobRouter from "./routes/jobRoutes.js";
+import portfolioRouter from "./routes/portfolioRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
 import { mountIntegrationApi } from "./routes/integrationApi.routes.js";
 
 const app = express();
 
 const port = process.env.PORT || 4000;
 
-/** Allow any localhost / 127.0.0.1 port so Vite (5173, 5174, etc.) always works with credentials. */
+/** Allow any localhost / 127.0.0.1 port so Vite (5173, 5174, etc.) works with credentials. */
 const corsOrigin = (origin, callback) => {
   if (!origin) return callback(null, true);
   const allowed =
@@ -31,11 +35,14 @@ app.use(
   })
 );
 
-// API Endpoint 
-app.get("/",(req,res)=>res.send("API working"));
-app.use('/api/auth',authRouter);
+app.get("/", (req, res) => res.send("API working"));
+app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/readiness", readinessRouter);
+app.use("/api/jobs", jobRouter);
+app.use("/api/portfolio", portfolioRouter);
+app.use("/api/messages", messageRouter);
 mountIntegrationApi(app);
 
 async function start() {
@@ -50,7 +57,3 @@ start().catch((err) => {
   console.error("Failed to start server:", err);
   process.exit(1);
 });
-
-//greatstack123
-
-//mongodb+srv://greatstack:<db_password>@cluster0.cui2so9.mongodb.net/

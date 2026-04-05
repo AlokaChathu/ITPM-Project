@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useContext } from 'react';
 import { AppContent } from '../context/AppContext';
-import { API_BASE } from '../config/api.js';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -12,7 +11,6 @@ function EmailVerify() {
     axios.defaults.withCredentials = true;
 
     const { backendUrl, isLoggedin, userData, getUserData } = useContext(AppContent);
-    const apiBase = backendUrl || API_BASE;
     const navigate = useNavigate();
     const inputRefs = useRef([]);
 
@@ -43,7 +41,7 @@ function EmailVerify() {
         try {
             const otpArray = inputRefs.current.map(e => e.value);
             const otp = otpArray.join('');
-            const { data } = await axios.post(`${apiBase}/api/auth/verify-account`, { otp });
+            const { data } = await axios.post(`${backendUrl}/api/auth/verify-account`, { otp });
 
             if (data.success) {
                 toast.success(data.message);
@@ -52,7 +50,7 @@ function EmailVerify() {
             } else {
                 toast.error(data.message);
             }
-        } catch {
+        } catch (error) {
             toast.error("Something went wrong!");
         }
     };

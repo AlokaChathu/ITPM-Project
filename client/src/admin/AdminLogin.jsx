@@ -1,30 +1,15 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-import BgImg from "../assets/backgroundImage.png";
+import BgImg from "../assets/Background1.jpg";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-toastify";
-import NewLogo from "../assets/TalenTracerLogo.png";
+import NewLogo from "../assets/TalenTracerLogo2.png";
 
-import { Mail, Lock } from "lucide-react";
-import { API_BASE } from "../config/api.js";
-
-/** Common domain typos — login must match the exact email stored at registration. */
-function domainTypoHint(raw) {
-  const i = String(raw).trim().lastIndexOf("@");
-  if (i < 0) return "";
-  const domain = raw.slice(i + 1).trim().toLowerCase();
-  const fixes = {
-    "gmai.com": "gmail.com",
-    "gmial.com": "gmail.com",
-    "gmaill.com": "gmail.com",
-    "hotmial.com": "hotmail.com",
-    "yahooo.com": "yahoo.com",
-  };
-  const correct = fixes[domain];
-  return correct ? `You typed @${domain}. Did you mean @${correct}?` : "";
-}
+import {
+  Mail,Lock
+} from "lucide-react";
 
 function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -33,129 +18,151 @@ function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      setIsLoading(true);
-      const res = await axios.post(
-        `${API_BASE}/api/admin/login`,
-        { email: email.trim(), password },
-        { withCredentials: true }
-      );
-      setIsLoading(false);
-
-      if (res.status === 200 && res.data?.success !== false) {
-        toast.success("Welcome back");
-        navigate("/admin/home");
-      } else {
-        setError(res.data?.message || "Login failed");
-        toast.error(res.data?.message || "Login failed");
-      }
-    } catch (err) {
-      setIsLoading(false);
-      const unreachable =
-        err.code === "ERR_NETWORK" ||
-        err.message === "Network Error" ||
-        !err.response;
-      if (unreachable) {
-        const hint =
-          "Cannot reach the API. From the project server folder run the backend (e.g. npm run dev) and ensure MongoDB is running.";
-        setError(hint);
-        toast.error(hint);
-      } else if (err.response?.status === 401 || err.response?.status === 400) {
-        const m = err.response?.data?.message || "Invalid email or password";
-        const typo = domainTypoHint(email);
-        const full = typo ? `${m} ${typo}` : m;
-        setError(full);
-        toast.error(full);
-      } else {
-        setError(err.response?.data?.message || "Something went wrong. Try again.");
-        toast.error(err.response?.data?.message || "Something went wrong. Try again.");
-      }
-    }
+  const fillDemo = () => {
+    setEmail("admin2@gmail.com");
+    setPassword("admin123");
+    setError("");
   };
 
-  const emailHint = domainTypoHint(email);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    setIsLoading(true);
+    const res = await axios.post("http://localhost:4000/api/admin/login", {
+      email,
+      password,
+    }, {
+      withCredentials: true
+    });
+    setIsLoading(false);
+
+    console.log('Login response:', res.data);
+
+    if (res.status === 200) {
+      // Redirect based on role
+      if (res.data.data.role === 'Lecturer') {
+        navigate("/admin/lecture-dashboard");
+      } else {
+        navigate("/admin/home");
+      }
+    }
+  } catch (err) {
+    setIsLoading(false);
+
+    console.error('Login error:', err.response?.data || err.message);
+
+    if (err.response && err.response.status === 401) {
+
+      setError("Invalid credentials");
+      toast.error("Invalid credentials");
+      navigate("/admin/login");
+    } else {
+      setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
+    }
+  }
+};
+
 
   return isLoading ? (
     <LoadingSpinner />
   ) : (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
+ 
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${BgImg})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-100/30 via-blue-900 to-blue-100/30 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-white/10 to-black/40 backdrop-blur-sm" />
 
       <img
         src={NewLogo}
         alt="logo"
         onClick={() => navigate("/")}
-        className="absolute left-6 top-6 z-10 w-28 cursor-pointer"
+        className="absolute top-6 left-6 w-28 cursor-pointer z-10"
       />
 
       <div
-        className="relative z-10 mt-20 mb-10 w-full max-w-md rounded-2xl border border-white/20 bg-white/10 p-8 text-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+        className="relative z-10 w-full max-w-md rounded-2xl p-8
+             bg-white/85 backdrop-blur-xl border border-white/30
+             shadow-[0_20px_50px_rgba(0,0,0,0.35)]
+             text-slate-800 mt-20 mb-10"
       >
-        <h2 className="mb-2 text-center text-3xl font-bold text-white/90">USIMS Admin Login</h2>
-        <p className="mb-8 text-center text-sm text-gray-300">
-          Sign in with the same email and password you used on{" "}
-          <Link to="/admin/register" className="text-indigo-300 underline hover:text-indigo-200">
-            Create admin account
-          </Link>
-          . (Student signup on the home page is a different account.)
+<h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
+          Admin Login
+        </h2>
+        <p className="text-center text-sm text-slate-600 mb-8">
+          Enter your credentials to continue
         </p>
 
-        {/* @validation — HTML5: type="email", required; password required */}
         <form onSubmit={handleLogin} className="space-y-6">
+       
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 size-[18px] -translate-y-1/2 text-gray-400" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-xl border border-white/30 bg-white/10 py-3 pl-10 pr-4 text-white placeholder-gray-400 backdrop-blur-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Admin email"
-            />
-            {emailHint && <p className="mt-2 text-xs text-amber-200/90">{emailHint}</p>}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500
+                     bg-white text-slate-800 placeholder-slate-400 transition"
+                placeholder="Enter your email"
+              />
+            </div>
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 size-[18px] -translate-y-1/2 text-gray-400" />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full rounded-xl border border-white/30 bg-white/10 py-3 pl-10 pr-4 text-white placeholder-gray-400 backdrop-blur-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Password"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500
+                     bg-white text-slate-800 placeholder-slate-400 transition"
+                placeholder="Enter your password"
+              />
+            </div>
           </div>
 
-          {error && <p className="text-sm text-red-300">{error}</p>}
+          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="w-full py-3 rounded-xl border border-indigo-200 bg-white text-indigo-700 font-semibold hover:border-indigo-300 hover:shadow-sm transition"
+            >
+              Demo Fill
+            </button>
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-900 py-3 font-semibold text-white/90 transition hover:scale-[1.02]"
+            className="w-full py-3 rounded-xl
+                 bg-gradient-to-r from-indigo-500 to-indigo-900
+                 hover:scale-[1.02] transition font-semibold cursor-pointer text-white/90"
           >
-            Sign in
+            Login
           </button>
+          </div>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-400">
-          First time?{" "}
-          <Link to="/admin/register" className="font-medium text-indigo-300 underline hover:text-indigo-200">
-            Create admin account
-          </Link>
-        </p>
-
-        <p className="mt-4 text-center text-xs text-gray-500">
-          <Link to="/" className="hover:text-gray-300">
-            ← Back to home
-          </Link>
+        <p className="text-center text-sm text-slate-600 mt-6">
+          Staff member?{" "}
+          <span
+            onClick={() => navigate("/admin/login")}
+            className="text-indigo-700 underline cursor-pointer"
+          >
+            Login here
+          </span>
         </p>
       </div>
+
+
     </div>
   );
 }

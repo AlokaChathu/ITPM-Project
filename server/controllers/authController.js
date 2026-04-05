@@ -1,26 +1,16 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
 import userModel from "../models/userModel.js";
 import tranporter from "../config/nodemailer.js";
-import { getUserJwtSecret } from "../config/jwtSecret.js";
 
 export const register = async (req, res) => {
   const { name, email, password, age, phone, address } = req.body;
 
-  // @validation — POST /api/auth/register: all body fields required
   if (!name || !email || !password || !age || !phone || !address) {
     return res.json({ success: false, message: "Missing Details" });
   }
 
   try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        message: "Database not connected. Please check MongoDB connection and try again.",
-      });
-    }
-
     const existingUser = await userModel.findOne({ email });
 
     if (existingUser) {
@@ -41,12 +31,7 @@ export const register = async (req, res) => {
 
     await user.save();
 
-    const jwtSecret = getUserJwtSecret();
-    if (!jwtSecret) {
-      return res.status(500).json({ success: false, message: "Server JWT secret is not configured" });
-    }
-
-    const token = jwt.sign({ id: user._id }, jwtSecret, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
@@ -91,11 +76,8 @@ export const register = async (req, res) => {
   `
     };
 
-    try {
-      await tranporter.sendMail(mailOptions);
-    } catch (mailErr) {
-      console.error("Welcome email failed (account still created):", mailErr.message);
-    }
+
+    await tranporter.sendMail(mailOptions);
 
     return res.json({ success: true });
 
@@ -108,7 +90,6 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  // @validation — POST /api/auth/login: email + password required; then credential checks below
   if (!email || !password) {
     return res.json({
       success: false,
@@ -117,13 +98,6 @@ export const login = async (req, res) => {
   }
 
   try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        message: "Database not connected. Please check MongoDB connection and try again.",
-      });
-    }
-
     const user = await userModel.findOne({ email });
 
     if (!user) {
@@ -136,12 +110,7 @@ export const login = async (req, res) => {
       return res.json({ success: false, message: "Invalid password" });
     }
 
-    const jwtSecret = getUserJwtSecret();
-    if (!jwtSecret) {
-      return res.status(500).json({ success: false, message: "Server JWT secret is not configured" });
-    }
-
-    const token = jwt.sign({ id: user._id }, jwtSecret, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 

@@ -30,9 +30,8 @@ const adminAuth = async (req, res, next) => {
     }
 
     req.adminId = decoded.id;
-   
-    next();
 
+    next();
   } catch (error) {
     return res.status(401).json({
       success: false,

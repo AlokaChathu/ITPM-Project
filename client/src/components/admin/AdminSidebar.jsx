@@ -2,14 +2,14 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 
 const navItems = [
-  { label: "Dashboard", to: "/admin/home" },
-  { label: "Users", to: "/admin/home/users" },
-  { label: "Roles", to: "/admin/home/roles" },
-  { label: "Internships", to: "/admin/home/internships" },
-  { label: "Configuration", to: "/admin/home/config" },
-  { label: "Analytics", to: "/admin/home/analytics" },
-  { label: "Reports", to: "/admin/home/reports" },
-  { label: "Backup & restore", to: "/admin/home/backup" },
+  { label: "Dashboard", to: "/admin/system" },
+  { label: "Users", to: "/admin/system/users" },
+  { label: "Roles", to: "/admin/system/roles" },
+  { label: "Internships", to: "/admin/system/internships" },
+  { label: "Configuration", to: "/admin/system/config" },
+  { label: "Analytics", to: "/admin/system/analytics" },
+  { label: "Reports", to: "/admin/system/reports" },
+  { label: "Backup & restore", to: "/admin/system/backup" },
 ];
 
 const AdminSidebar = () => {
@@ -22,7 +22,7 @@ const AdminSidebar = () => {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === "/admin/home"}
+            end={item.to === "/admin/system"}
             className={({ isActive }) =>
               `block rounded-lg px-3 py-2 text-sm font-medium transition ${
                 isActive ? "bg-indigo-600 text-white shadow-sm" : "text-slate-700 hover:bg-indigo-50/80"
