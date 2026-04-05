@@ -1,0 +1,56 @@
+import express from "express";
+import cors from "cors";
+import 'dotenv/config';
+import cookieParser from "cookie-parser";
+import connectDB from "./config/mongodb.js";
+import authRouter from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+import adminRouter from './routes/Admin.route.js'
+import { mountIntegrationApi } from "./routes/integrationApi.routes.js";
+
+const app = express();
+
+const port = process.env.PORT || 4000;
+
+/** Allow any localhost / 127.0.0.1 port so Vite (5173, 5174, etc.) always works with credentials. */
+const corsOrigin = (origin, callback) => {
+  if (!origin) return callback(null, true);
+  const allowed =
+    /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(origin) ||
+    (process.env.CLIENT_ORIGIN && origin === process.env.CLIENT_ORIGIN);
+  if (allowed) return callback(null, true);
+  callback(null, false);
+};
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: corsOrigin,
+    credentials: true,
+  })
+);
+
+// API Endpoint 
+app.get("/",(req,res)=>res.send("API working"));
+app.use('/api/auth',authRouter);
+app.use("/api/user", userRouter);
+app.use("/api/admin", adminRouter);
+mountIntegrationApi(app);
+
+async function start() {
+  await connectDB();
+  app.listen(port, () =>
+    console.log(`Server started on PORT:${port}
+`)
+  );
+}
+
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
+});
+
+//greatstack123
+
+//mongodb+srv://greatstack:<db_password>@cluster0.cui2so9.mongodb.net/
