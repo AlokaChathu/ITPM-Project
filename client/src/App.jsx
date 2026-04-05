@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 // existing pages
 import Home from './pages/Home'
@@ -51,6 +51,8 @@ function App() {
         <Route path='/company-register' element={<CompanyRegister />} />
         <Route path='/company-login' element={<CompanyLogin />} />
         <Route path="/internship-post" element={<InternshipPost />} />
+        <Route path="/company/register" element={<CompanyRegister />} />
+      
 
 
         {/* admin */}

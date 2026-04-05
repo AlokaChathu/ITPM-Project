@@ -597,17 +597,28 @@ function Login() {
         )}
 
         <div className="mt-4 pt-4 border-t border-white/10 text-center">
-          <p className="text-xs text-slate-500">
-            Staff member?{" "}
-            <button
-              onClick={() => navigate("/admin/login")}
-              className="text-indigo-700 hover:text-indigo-600 font-semibold transition-colors inline-flex items-center gap-1"
-            >
-              <Shield size={12} />
-              Admin Portal
-            </button>
-          </p>
-        </div>
+  <p className="text-xs text-slate-500">
+    Staff member?{" "}
+    <button
+      onClick={() => navigate("/admin/login")}
+      className="text-indigo-700 hover:text-indigo-600 font-semibold transition-colors inline-flex items-center gap-1"
+    >
+      <Shield size={12} />
+      Admin Portal
+    </button>
+  </p>
+
+  <p className="text-xs text-slate-500 mt-2">
+    Company user?{" "}
+    <button
+      onClick={() => navigate("/company-login")}
+      className="text-emerald-700 hover:text-emerald-600 font-semibold transition-colors inline-flex items-center gap-1"
+    >
+      <Building2 size={12} />
+      Company Login
+    </button>
+  </p>
+</div>
 
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-500">
           <CheckCircle2 size={12} />
