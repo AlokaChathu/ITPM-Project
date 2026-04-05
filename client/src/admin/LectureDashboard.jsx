@@ -40,6 +40,23 @@ function LectureDashboard() {
     notes: '',
     status: 'Scheduled'
   });
+
+  // Get today's date in YYYY-MM-DD format for min date attribute
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get current time in HH:MM format for min time attribute
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
   const [reviewForm, setReviewForm] = useState({
     mark: '',
     feedback: ''
@@ -219,8 +236,50 @@ function LectureDashboard() {
   };
 
   const handleSaveSchedule = () => {
-    if (!scheduleForm.studentId || !scheduleForm.date || !scheduleForm.time || !scheduleForm.venue) {
-      toast.error('Please fill all required fields');
+    // Form validation
+    if (!scheduleForm.studentId) {
+      toast.error('Please select a student');
+      return;
+    }
+    if (!scheduleForm.date) {
+      toast.error('Please select a date');
+      return;
+    }
+    if (!scheduleForm.time) {
+      toast.error('Please select a time');
+      return;
+    }
+    if (!scheduleForm.venue) {
+      toast.error('Please enter a venue');
+      return;
+    }
+
+    // Date validation - prevent past dates
+    const selectedDate = new Date(scheduleForm.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to midnight for comparison
+    
+    if (selectedDate < today) {
+      toast.error('Cannot schedule viva in the past');
+      return;
+    }
+
+    // Time validation for today
+    if (selectedDate.toDateString() === today.toDateString()) {
+      const currentTime = new Date();
+      const [hours, minutes] = scheduleForm.time.split(':');
+      const selectedTime = new Date();
+      selectedTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      if (selectedTime <= currentTime) {
+        toast.error('Cannot schedule viva in the past. Please select a future time.');
+        return;
+      }
+    }
+
+    // Venue validation
+    if (scheduleForm.venue.trim().length < 3) {
+      toast.error('Venue must be at least 3 characters long');
       return;
     }
 
@@ -289,8 +348,39 @@ function LectureDashboard() {
   };
 
   const handleSaveReview = () => {
-    if (!reviewForm.mark || reviewForm.mark < 0 || reviewForm.mark > 100) {
-      toast.error('Please enter a valid mark between 0 and 100');
+    // Form validation
+    if (!reviewForm.mark) {
+      toast.error('Please enter a mark');
+      return;
+    }
+
+    const mark = parseFloat(reviewForm.mark);
+    
+    // Mark range validation
+    if (isNaN(mark)) {
+      toast.error('Please enter a valid number for the mark');
+      return;
+    }
+    
+    if (mark < 0) {
+      toast.error('Mark cannot be negative');
+      return;
+    }
+    
+    if (mark > 100) {
+      toast.error('Mark cannot exceed 100');
+      return;
+    }
+
+    // Feedback validation for approval
+    if (mark < 50 && !reviewForm.feedback.trim()) {
+      toast.error('Please provide feedback for marks below 50%');
+      return;
+    }
+
+    // Feedback length validation
+    if (reviewForm.feedback && reviewForm.feedback.trim().length > 500) {
+      toast.error('Feedback cannot exceed 500 characters');
       return;
     }
 
@@ -299,22 +389,33 @@ function LectureDashboard() {
       report.id === selectedReport.id 
         ? {
             ...report,
-            mark: parseInt(reviewForm.mark),
+            mark: mark,
             status: 'Approved',
             feedback: reviewForm.feedback
           }
         : report
     ));
 
-    toast.success(`Report reviewed and marked: ${reviewForm.mark}%`);
+    toast.success(`Report reviewed and marked: ${mark}%`);
     setShowReviewModal(false);
     setSelectedReport(null);
     setReviewForm({ mark: '', feedback: '' });
   };
 
   const handleRejectReport = () => {
-    if (!reviewForm.feedback) {
+    // Form validation for rejection
+    if (!reviewForm.feedback || !reviewForm.feedback.trim()) {
       toast.error('Please provide feedback for rejection');
+      return;
+    }
+
+    if (reviewForm.feedback.trim().length < 10) {
+      toast.error('Feedback must be at least 10 characters long');
+      return;
+    }
+
+    if (reviewForm.feedback.trim().length > 500) {
+      toast.error('Feedback cannot exceed 500 characters');
       return;
     }
 
@@ -375,17 +476,77 @@ function LectureDashboard() {
   };
 
   const handleSaveGrade = () => {
-    if (!gradingForm.vivaScore || !gradingForm.reportMark || !gradingForm.companyRating) {
-      toast.error('Please fill all required fields');
+    // Form validation
+    if (!gradingForm.vivaScore) {
+      toast.error('Please enter viva score');
+      return;
+    }
+    if (!gradingForm.reportMark) {
+      toast.error('Please enter report score');
+      return;
+    }
+    if (!gradingForm.companyRating) {
+      toast.error('Please enter company rating');
       return;
     }
 
-    const finalScore = calculateFinalScore(
-      parseFloat(gradingForm.vivaScore),
-      parseFloat(gradingForm.reportMark),
-      parseFloat(gradingForm.companyRating)
-    );
+    // Viva score validation
+    const vivaScore = parseFloat(gradingForm.vivaScore);
+    if (isNaN(vivaScore)) {
+      toast.error('Please enter a valid number for viva score');
+      return;
+    }
+    if (vivaScore < 0) {
+      toast.error('Viva score cannot be negative');
+      return;
+    }
+    if (vivaScore > 100) {
+      toast.error('Viva score cannot exceed 100');
+      return;
+    }
 
+    // Report score validation
+    const reportMark = parseFloat(gradingForm.reportMark);
+    if (isNaN(reportMark)) {
+      toast.error('Please enter a valid number for report score');
+      return;
+    }
+    if (reportMark < 0) {
+      toast.error('Report score cannot be negative');
+      return;
+    }
+    if (reportMark > 100) {
+      toast.error('Report score cannot exceed 100');
+      return;
+    }
+
+    // Company rating validation
+    const companyRating = parseFloat(gradingForm.companyRating);
+    if (isNaN(companyRating)) {
+      toast.error('Please enter a valid number for company rating');
+      return;
+    }
+    if (companyRating < 0) {
+      toast.error('Company rating cannot be negative');
+      return;
+    }
+    if (companyRating > 100) {
+      toast.error('Company rating cannot exceed 100');
+      return;
+    }
+
+    // Additional validation: Check if all scores are reasonable
+    if (vivaScore < 30) {
+      const confirmLowScore = window.confirm('Viva score is quite low (below 30%). Are you sure you want to continue?');
+      if (!confirmLowScore) return;
+    }
+
+    if (reportMark < 30) {
+      const confirmLowReport = window.confirm('Report score is quite low (below 30%). Are you sure you want to continue?');
+      if (!confirmLowReport) return;
+    }
+
+    const finalScore = calculateFinalScore(vivaScore, reportMark, companyRating);
     const finalGrade = calculateGrade(finalScore);
 
     // Update student with grading information
@@ -393,9 +554,9 @@ function LectureDashboard() {
       student.id === selectedGradingStudent.id 
         ? {
             ...student,
-            vivaScore: parseFloat(gradingForm.vivaScore),
-            reportMark: parseFloat(gradingForm.reportMark),
-            companyRating: parseFloat(gradingForm.companyRating) / 20, // Convert back to 5-point scale
+            vivaScore: vivaScore,
+            reportMark: reportMark,
+            companyRating: companyRating / 20, // Convert back to 5-point scale
             finalScore: finalScore,
             finalGrade: finalGrade,
             status: 'Graded'
@@ -935,7 +1096,7 @@ function LectureDashboard() {
 
       {/* Schedule Viva Modal */}
       {showScheduleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-slate-300 bg-opacity-90 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {selectedSchedule ? 'Edit Viva Schedule' : 'Schedule New Viva'}
@@ -947,6 +1108,7 @@ function LectureDashboard() {
                   value={scheduleForm.studentId}
                   onChange={(e) => setScheduleForm({...scheduleForm, studentId: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 >
                   <option value="">Select a student</option>
                   {students
@@ -964,7 +1126,9 @@ function LectureDashboard() {
                   type="date"
                   value={scheduleForm.date}
                   onChange={(e) => setScheduleForm({...scheduleForm, date: e.target.value})}
+                  min={getTodayDate()}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
               <div>
@@ -973,7 +1137,9 @@ function LectureDashboard() {
                   type="time"
                   value={scheduleForm.time}
                   onChange={(e) => setScheduleForm({...scheduleForm, time: e.target.value})}
+                  min={scheduleForm.date === getTodayDate() ? getCurrentTime() : ''}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
               <div>
@@ -984,6 +1150,8 @@ function LectureDashboard() {
                   value={scheduleForm.venue}
                   onChange={(e) => setScheduleForm({...scheduleForm, venue: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  minLength="3"
+                  required
                 />
               </div>
               <div>
@@ -1005,6 +1173,7 @@ function LectureDashboard() {
                   value={scheduleForm.notes}
                   onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
                   rows={3}
+                  maxLength="200"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -1040,7 +1209,7 @@ function LectureDashboard() {
 
       {/* Report Review Modal */}
       {showReviewModal && selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-slate-300 bg-opacity-90 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="mb-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Review Internship Report</h3>
@@ -1106,16 +1275,19 @@ function LectureDashboard() {
                         type="number"
                         min="0"
                         max="100"
+                        step="0.1"
                         value={reviewForm.mark}
                         onChange={(e) => setReviewForm({...reviewForm, mark: e.target.value})}
                         placeholder="Enter mark (0-100)"
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
                       />
                       <div className="flex items-center gap-2">
                         <input
                           type="range"
                           min="0"
                           max="100"
+                          step="0.1"
                           value={reviewForm.mark || 0}
                           onChange={(e) => setReviewForm({...reviewForm, mark: e.target.value})}
                           className="w-32"
@@ -1135,8 +1307,12 @@ function LectureDashboard() {
                       onChange={(e) => setReviewForm({...reviewForm, feedback: e.target.value})}
                       placeholder="Provide feedback for the student..."
                       rows={4}
+                      maxLength="500"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {reviewForm.feedback ? reviewForm.feedback.length : 0}/500 characters
+                    </p>
                   </div>
 
                   {/* Action Buttons */}
@@ -1173,7 +1349,7 @@ function LectureDashboard() {
 
       {/* Grading Modal */}
       {showGradingModal && selectedGradingStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-slate-300 bg-opacity-90 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold text-gray-900 mb-6">
               {selectedGradingStudent.finalGrade ? 'Edit Grade' : 'Assign Grade'} - {selectedGradingStudent.name}
@@ -1204,10 +1380,12 @@ function LectureDashboard() {
                   type="number"
                   min="0"
                   max="100"
+                  step="0.1"
                   value={gradingForm.reportMark}
                   onChange={(e) => setGradingForm({...gradingForm, reportMark: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Auto-filled from Reports section"
+                  required
                 />
               </div>
 
@@ -1220,10 +1398,12 @@ function LectureDashboard() {
                   type="number"
                   min="0"
                   max="100"
+                  step="0.1"
                   value={gradingForm.companyRating}
                   onChange={(e) => setGradingForm({...gradingForm, companyRating: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Auto-filled from Company Feedback"
+                  required
                 />
               </div>
 
@@ -1236,6 +1416,7 @@ function LectureDashboard() {
                   type="number"
                   min="0"
                   max="100"
+                  step="0.1"
                   value={gradingForm.vivaScore}
                   onChange={(e) => {
                     const vivaScore = e.target.value;
@@ -1254,7 +1435,8 @@ function LectureDashboard() {
                     });
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  required
+                />
               </div>
 
               {/* Auto-calculated Results */}
