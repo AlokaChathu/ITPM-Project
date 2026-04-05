@@ -1,0 +1,61 @@
+USIMS — System administration & analytics module
+==================================================
+
+Prerequisites: Node.js 18+, MongoDB running, server/.env with MONGODB_URI and admin JWT secret.
+
+1) Install dependencies
+   - From project root: npm install
+   - Server: cd server && npm install
+   - Client: cd client && npm install
+
+2) Start API + web (recommended)
+   - From project root: npm run dev
+   - Or: terminal A — cd server && npm run dev
+          terminal B — cd client && npm run dev
+
+3) Admin access
+   - Open the Vite URL (e.g. http://localhost:5173)
+   - Register admin: /admin/register (first-time)
+   - Sign in: /admin/login
+   - Panel: /admin/home
+
+4) Two-minute demo flow
+   - Dashboard: summary cards, placement trend, user growth, recent activity — “Load sample data” (users + internships)
+   - Users: Fill sample data / Load demo users — Add; Edit; Activate; Deactivate; Delete (REST DELETE)
+   - Roles: Assign role (Admin, Student, Supervisor, Company)
+   - Internships: Load sample internships — Approve / Reject
+   - Configuration: GPA 0–4, duration, weights totaling 100%
+   - Analytics: placement, GPA bands, internship categories (from GET /api/analytics)
+   - Reports: CSV download + Print / PDF
+   - Backup: Create backup — Restore (config from snapshot)
+
+API base (dev): Vite proxies /api to Express (default port 4000).
+
+Integration module (all require admin cookie except public auth):
+  GET        /api/dashboard
+  GET/POST   /api/users
+  POST       /api/users/seed
+  PATCH      /api/users/:id
+  DELETE     /api/users/:id
+  GET        /api/roles
+  PATCH      /api/roles/:id
+  GET/POST   /api/config
+  GET        /api/internships
+  POST       /api/internships/seed
+  PATCH      /api/internships/:id
+  GET        /api/analytics
+  GET        /api/reports
+  GET        /api/reports/json
+  GET        /api/reports/students.csv
+  GET        /api/reports/internships.csv
+
+Auth-only (unchanged):
+  POST       /api/admin/register
+  POST       /api/admin/login
+  GET        /api/admin/logout
+  GET/POST   /api/admin/backup, /api/admin/backup/restore
+  GET/POST   /api/admin/notifications
+
+Legacy aliases under /api/admin/* still mirror users, roles, config, internships, reports for the same handlers.
+
+Note: If the Config collection used the old schema, the first GET /api/config migrates to the GPA/weights model automatically.
