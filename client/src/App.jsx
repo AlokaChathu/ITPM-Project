@@ -19,6 +19,7 @@ import RoleManagement from "./pages/admin/RoleManagement";
 import InternshipApproval from "./pages/admin/InternshipApproval";
 import SystemConfiguration from "./pages/admin/SystemConfiguration";
 import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
+import ReportsPage from "./pages/admin/ReportsPage";
 import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
           <Route path="internships" element={<InternshipApproval />} />
           <Route path="config" element={<SystemConfiguration />} />
           <Route path="analytics" element={<AnalyticsDashboard />} />
+          <Route path="reports" element={<ReportsPage />} />
         </Route>
         <Route path="/admin" element={<Navigate to="/admin/home" replace />} />
       </Routes>
