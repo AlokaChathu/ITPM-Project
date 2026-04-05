@@ -21,16 +21,17 @@ import StudentJobs from "./pages/StudentJobs";
 import StudentPortfolio from "./pages/StudentPortfolio";
 import AdminStudents from "./admin/AdminStudents";
 
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import UserManagement from "./pages/admin/UserManagement";
-import RoleManagement from "./pages/admin/RoleManagement";
-import InternshipApproval from "./pages/admin/InternshipApproval";
-import SystemConfiguration from "./pages/admin/SystemConfiguration";
-import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
-import ReportsPage from "./pages/admin/ReportsPage";
-import BackupRestore from "./pages/admin/BackupRestore";
-import NotificationPage from "./pages/admin/NotificationPage";
+// System administration & analytics — screens live under src/admin/pages/
+import AdminLayout from "./admin/pages/AdminLayout";
+import AdminDashboard from "./admin/pages/AdminDashboard";
+import UserManagement from "./admin/pages/UserManagement";
+import RoleManagement from "./admin/pages/RoleManagement";
+import InternshipApproval from "./admin/pages/InternshipApproval";
+import SystemConfiguration from "./admin/pages/SystemConfiguration";
+import AnalyticsDashboard from "./admin/pages/AnalyticsDashboard";
+import ReportsPage from "./admin/pages/ReportsPage";
+import BackupRestore from "./admin/pages/BackupRestore";
+import NotificationPage from "./admin/pages/NotificationPage";
 import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 function App() {

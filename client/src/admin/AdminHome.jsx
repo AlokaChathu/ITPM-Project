@@ -100,7 +100,7 @@ function AdminHome() {
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
           >
             <BarChart3 size={18} />
-            System &amp; analytics
+            Admin &amp; Analytics Panel
           </button>
         </nav>
 

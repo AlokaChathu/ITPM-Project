@@ -23,7 +23,7 @@ function LectureDashboard() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showGradingModal, setShowGradingModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [, setSelectedStudent] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedGradingStudent, setSelectedGradingStudent] = useState(null);
@@ -63,23 +63,10 @@ function LectureDashboard() {
   });
   const navigate = useNavigate();
 
-  // Color scheme: 60% Primary (Blue), 30% Secondary (Teal), 10% Accent (Orange)
-  const colors = {
-    primary: '#1e40af',      // Blue-800
-    primaryLight: '#3b82f6',  // Blue-500
-    secondary: '#0f766e',     // Teal-700
-    secondaryLight: '#14b8a6', // Teal-500
-    accent: '#f97316',        // Orange-500
-    accentLight: '#fb923c',   // Orange-400
-    background: '#f8fafc',    // Slate-50
-    cardBg: '#ffffff',        // White
-    text: '#1e293b',         // Slate-800
-    textLight: '#64748b'      // Slate-500
-  };
-
   useEffect(() => {
     fetchLecturerData();
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial load only
   }, []);
 
   const fetchLecturerData = async () => {
