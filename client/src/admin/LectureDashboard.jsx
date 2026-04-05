@@ -867,17 +867,17 @@ function LectureDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-gradient-to-r from-purple-900 via-gray-900 to-purple-800 shadow-lg border-b border-purple-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <BookOpen className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Lecture Dashboard</h1>
+                <h1 className="text-2xl font-bold text-white">Lecture Dashboard</h1>
                 {lecturerData && (
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-purple-200">
                     Welcome back, {lecturerData.fullName}
                   </span>
                 )}
@@ -895,7 +895,7 @@ function LectureDashboard() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-gradient-to-r from-purple-800 to-gray-800 border-b border-purple-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {[
@@ -911,8 +911,8 @@ function LectureDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-4 px-1 border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-purple-400 text-white'
+                    : 'border-transparent text-purple-200 hover:text-white hover:border-purple-500'
                 }`}
               >
                 <tab.icon size={18} />
