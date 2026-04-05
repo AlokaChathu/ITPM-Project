@@ -16,6 +16,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import RoleManagement from "./pages/admin/RoleManagement";
+import InternshipApproval from "./pages/admin/InternshipApproval";
 import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="roles" element={<RoleManagement />} />
+          <Route path="internships" element={<InternshipApproval />} />
         </Route>
         <Route path="/admin" element={<Navigate to="/admin/home" replace />} />
       </Routes>
