@@ -5,15 +5,18 @@ import BackButton from "../components/BackButton";
 function WeeklyMonthlyReports() {
   const [reports, setReports] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
+  const initialForm = {
     studentId: "",
     type: "Weekly",
     weekNumber: "",
     monthNumber: "",
     title: "",
     description: "",
-  });
+  };
+
+  const [form, setForm] = useState(initialForm);
 
   const fetchReports = async () => {
     try {
@@ -25,7 +28,7 @@ function WeeklyMonthlyReports() {
         setReports(data.reports);
       }
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      console.log("Fetch reports error:", error.response?.data || error.message);
     }
   };
 
@@ -33,14 +36,69 @@ function WeeklyMonthlyReports() {
     fetchReports();
   }, []);
 
+  const resetForm = () => {
+    setForm(initialForm);
+    setEditingId(null);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      if (name === "type") {
+        if (value === "Weekly") {
+          updated.monthNumber = "";
+        } else {
+          updated.weekNumber = "";
+        }
+      }
+
+      return updated;
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const payload = {
+      studentId: form.studentId.trim(),
+      type: form.type,
+      title: form.title.trim(),
+      description: form.description.trim(),
+      weekNumber:
+        form.type === "Weekly" && form.weekNumber !== ""
+          ? Number(form.weekNumber)
+          : null,
+      monthNumber:
+        form.type === "Monthly" && form.monthNumber !== ""
+          ? Number(form.monthNumber)
+          : null,
+    };
+
+    if (!payload.studentId || !payload.title || !payload.description) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    if (payload.type === "Weekly" && !payload.weekNumber) {
+      alert("Week number is required for weekly reports");
+      return;
+    }
+
+    if (payload.type === "Monthly" && !payload.monthNumber) {
+      alert("Month number is required for monthly reports");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       if (editingId) {
         const { data } = await axios.put(
           `http://localhost:4000/api/reports/${editingId}`,
-          form,
+          payload,
           { withCredentials: true }
         );
 
@@ -50,7 +108,7 @@ function WeeklyMonthlyReports() {
       } else {
         const { data } = await axios.post(
           "http://localhost:4000/api/reports",
-          form,
+          payload,
           { withCredentials: true }
         );
 
@@ -59,19 +117,13 @@ function WeeklyMonthlyReports() {
         }
       }
 
-      setForm({
-        studentId: "",
-        type: "Weekly",
-        weekNumber: "",
-        monthNumber: "",
-        title: "",
-        description: "",
-      });
-      setEditingId(null);
+      resetForm();
       fetchReports();
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      console.log("Submit report error:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Operation failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,6 +137,7 @@ function WeeklyMonthlyReports() {
       title: report.title || "",
       description: report.description || "",
     });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -103,7 +156,7 @@ function WeeklyMonthlyReports() {
         fetchReports();
       }
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      console.log("Delete report error:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Delete failed");
     }
   };
@@ -115,16 +168,20 @@ function WeeklyMonthlyReports() {
         <BackButton />
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-4 bg-white p-6 rounded-xl shadow mb-8">
+      <form
+        onSubmit={handleSubmit}
+        className="grid gap-4 bg-white p-6 rounded-xl shadow mb-8"
+      >
         <div>
           <label className="block mb-1 font-medium">
             Student ID <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
+            name="studentId"
             placeholder="Enter student ID"
             value={form.studentId}
-            onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+            onChange={handleChange}
             className="border p-3 rounded-lg w-full"
             required
           />
@@ -135,8 +192,9 @@ function WeeklyMonthlyReports() {
             Report Type <span className="text-red-500">*</span>
           </label>
           <select
+            name="type"
             value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
+            onChange={handleChange}
             className="border p-3 rounded-lg w-full"
           >
             <option value="Weekly">Weekly</option>
@@ -144,27 +202,41 @@ function WeeklyMonthlyReports() {
           </select>
         </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Week Number</label>
-          <input
-            type="number"
-            placeholder="Enter week number"
-            value={form.weekNumber}
-            onChange={(e) => setForm({ ...form, weekNumber: e.target.value })}
-            className="border p-3 rounded-lg w-full"
-          />
-        </div>
+        {form.type === "Weekly" && (
+          <div>
+            <label className="block mb-1 font-medium">
+              Week Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="weekNumber"
+              placeholder="Enter week number"
+              value={form.weekNumber}
+              onChange={handleChange}
+              className="border p-3 rounded-lg w-full"
+              min="1"
+              required
+            />
+          </div>
+        )}
 
-        <div>
-          <label className="block mb-1 font-medium">Month Number</label>
-          <input
-            type="number"
-            placeholder="Enter month number"
-            value={form.monthNumber}
-            onChange={(e) => setForm({ ...form, monthNumber: e.target.value })}
-            className="border p-3 rounded-lg w-full"
-          />
-        </div>
+        {form.type === "Monthly" && (
+          <div>
+            <label className="block mb-1 font-medium">
+              Month Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="monthNumber"
+              placeholder="Enter month number"
+              value={form.monthNumber}
+              onChange={handleChange}
+              className="border p-3 rounded-lg w-full"
+              min="1"
+              required
+            />
+          </div>
+        )}
 
         <div>
           <label className="block mb-1 font-medium">
@@ -172,9 +244,10 @@ function WeeklyMonthlyReports() {
           </label>
           <input
             type="text"
+            name="title"
             placeholder="Enter report title"
             value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            onChange={handleChange}
             className="border p-3 rounded-lg w-full"
             required
           />
@@ -185,9 +258,10 @@ function WeeklyMonthlyReports() {
             Report Description <span className="text-red-500">*</span>
           </label>
           <textarea
+            name="description"
             placeholder="Enter report description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={handleChange}
             className="border p-3 rounded-lg w-full"
             rows="4"
             required
@@ -195,23 +269,21 @@ function WeeklyMonthlyReports() {
         </div>
 
         <div className="flex gap-3">
-          <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
-            {editingId ? "Update Report" : "Submit Report"}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+          >
+            {loading
+              ? "Please wait..."
+              : editingId
+              ? "Update Report"
+              : "Submit Report"}
           </button>
 
           <button
             type="button"
-            onClick={() => {
-              setEditingId(null);
-              setForm({
-                studentId: "",
-                type: "Weekly",
-                weekNumber: "",
-                monthNumber: "",
-                title: "",
-                description: "",
-              });
-            }}
+            onClick={resetForm}
             className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition"
           >
             Reset
@@ -219,7 +291,7 @@ function WeeklyMonthlyReports() {
         </div>
       </form>
 
-      <h2 className="text-2xl font-semibold mb-4">My Reports</h2>
+      <h2 className="text-2xl font-semibold mb-4">Reports</h2>
 
       <div className="grid gap-4">
         {reports.length > 0 ? (

@@ -5,6 +5,13 @@ export const createInternshipMonitoring = async (req, res) => {
   try {
     const { studentId, studentName, startDate, endDate } = req.body;
 
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
     if (!studentId || !studentName || !startDate || !endDate) {
       return res.status(400).json({
         success: false,
@@ -27,6 +34,7 @@ export const createInternshipMonitoring = async (req, res) => {
       endDate,
       status: "Active",
       progress: 0,
+      lastActivityDate: new Date(),
     });
 
     res.status(201).json({
@@ -35,6 +43,7 @@ export const createInternshipMonitoring = async (req, res) => {
       internship,
     });
   } catch (error) {
+    console.log("CREATE ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -54,6 +63,7 @@ export const getMyInternshipMonitoring = async (req, res) => {
       internships,
     });
   } catch (error) {
+    console.log("FETCH ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -81,6 +91,7 @@ export const getSingleInternshipMonitoring = async (req, res) => {
       internship,
     });
   } catch (error) {
+    console.log("GET SINGLE ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -91,8 +102,7 @@ export const getSingleInternshipMonitoring = async (req, res) => {
 // UPDATE internship monitoring record
 export const updateInternshipMonitoring = async (req, res) => {
   try {
-    const { studentId, studentName, startDate, endDate, status, progress } =
-      req.body;
+    const { studentId, studentName, startDate, endDate, status, progress } = req.body;
 
     if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
       return res.status(400).json({
@@ -112,7 +122,7 @@ export const updateInternshipMonitoring = async (req, res) => {
         progress,
         lastActivityDate: new Date(),
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!internship) {
@@ -128,6 +138,7 @@ export const updateInternshipMonitoring = async (req, res) => {
       internship,
     });
   } catch (error) {
+    console.log("UPDATE ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -155,6 +166,7 @@ export const deleteInternshipMonitoring = async (req, res) => {
       message: "Internship monitoring record deleted successfully",
     });
   } catch (error) {
+    console.log("DELETE ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
