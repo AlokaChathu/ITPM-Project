@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import AdminLogin from './admin/AdminLogin'
 import AdminHome from './admin/AdminHome'
+import LectureDashboard from './admin/LectureDashboard'
 import MyProfile from './pages/MyProfile'
 import CustomerHome from './pages/CustomerHome'
 import AdminReadiness from './admin/AdminReadiness';
@@ -38,6 +39,7 @@ function App() {
 
         <Route path='/admin/login' element={<AdminLogin/>}/>
         <Route path='/admin/home' element={<AdminHome/>}/>
+        <Route path='/admin/lecture-dashboard' element={<LectureDashboard/>}/>
         <Route path='/readiness' element={<StudentReadiness/>}/>
         <Route path='/admin/jobs' element={<AdminJobs/>}/>
         <Route path='/jobs' element={<StudentJobs/>}/>
