@@ -12,6 +12,8 @@ import AdminLogin from "./admin/AdminLogin";
 import AdminRegister from "./admin/AdminRegister";
 import MyProfile from "./pages/MyProfile";
 import CustomerHome from "./pages/CustomerHome";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 function App() {
   return (
@@ -27,7 +29,20 @@ function App() {
 
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
-        <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
+        <Route
+          path="/admin/home"
+          element={
+            <AdminRouteGuard>
+              <AdminLayout />
+            </AdminRouteGuard>
+          }
+        >
+          <Route
+            index
+            element={<p className="text-slate-600">Admin panel shell — add dashboard page next.</p>}
+          />
+        </Route>
+        <Route path="/admin" element={<Navigate to="/admin/home" replace />} />
       </Routes>
     </div>
   );
