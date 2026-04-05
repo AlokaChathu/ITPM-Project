@@ -50,7 +50,7 @@ function AdminStudents() {
       axios.defaults.withCredentials = true;
       const { data } = await axios.get(`http://localhost:4000/api/messages/student/${studentId}`);
       if (data.success) setMessageHistory(data.data);
-    } catch (error) {
+    } catch (_err) {
       toast.error("Could not fetch message history.");
     } finally {
       setIsHistoryLoading(false);

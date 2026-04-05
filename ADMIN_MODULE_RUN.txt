@@ -19,6 +19,7 @@ Prerequisites: Node.js 18+, MongoDB running, server/.env with MONGODB_URI and ad
    - Sign in: /admin/login
    - Main admin hub (team UI): /admin/home
    - System administration & analytics module: /admin/system (also linked from Admin Home sidebar)
+   - Source: client/src/admin/pages/ (module screens); shared admin chrome: client/src/components/admin/
 
 4) Two-minute demo flow
    - Dashboard: summary cards, placement trend, user growth, recent activity — “Load sample data” (users + internships)

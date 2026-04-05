@@ -37,7 +37,7 @@ function Login() {
   const [address, setAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [focusedField, setFocusedField] = useState(null);
+  const [, setFocusedField] = useState(null);
   const [touchedFields, setTouchedFields] = useState({});
 
   const checks = useMemo(() => {
@@ -58,12 +58,14 @@ function Login() {
 
   const validateField = (field, value) => {
     switch (field) {
-      case 'name':
+      case 'name': {
         const nameRegex = /^[A-Za-z\s]{5,20}$/;
         return nameRegex.test(value);
-      case 'email':
+      }
+      case 'email': {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(value);
+      }
       case 'password':
         return isValidPassword;
       case 'age':
