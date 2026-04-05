@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-import BgImg from "../assets/backgroundImage.png";
+import BgImg from "../assets/Background1.jpg";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-toastify";
-import NewLogo from "../assets/TalenTracerLogo.png";
+import NewLogo from "../assets/TalenTracerLogo2.png";
 
 import {
   Mail,Lock
@@ -17,6 +17,12 @@ function AdminLogin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const fillDemo = () => {
+    setEmail("admin2@gmail.com");
+    setPassword("admin123");
+    setError("");
+  };
 
 const handleLogin = async (e) => {
   e.preventDefault();
@@ -56,7 +62,7 @@ const handleLogin = async (e) => {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${BgImg})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-100/30 via-blue-900 to-blue-100/30 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-white/10 to-black/40 backdrop-blur-sm" />
 
       <img
         src={NewLogo}
@@ -67,14 +73,14 @@ const handleLogin = async (e) => {
 
       <div
         className="relative z-10 w-full max-w-md rounded-2xl p-8
-             bg-white/10 backdrop-blur-xl border border-white/20
-             shadow-[0_20px_50px_rgba(0,0,0,0.4)]
-             text-gray-900 mt-20 mb-10"
+             bg-white/85 backdrop-blur-xl border border-white/30
+             shadow-[0_20px_50px_rgba(0,0,0,0.35)]
+             text-slate-800 mt-20 mb-10"
       >
-        <h2 className="text-3xl text-white/80 font-bold text-center mb-2">
+        <h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
           Admin Login
         </h2>
-        <p className="text-center text-sm text-gray-400 mb-8">
+        <p className="text-center text-sm text-slate-600 mb-8">
           Enter your credentials to continue
         </p>
 
@@ -88,9 +94,9 @@ const handleLogin = async (e) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-white/30 rounded-xl
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
                      focus:outline-none focus:ring-2 focus:ring-indigo-500
-                     bg-white/10 placeholder-gray-400 backdrop-blur-sm transition text-white"
+                     bg-white text-slate-800 placeholder-slate-400 transition"
                 placeholder="Enter your email"
               />
             </div>
@@ -104,15 +110,24 @@ const handleLogin = async (e) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-white/30 rounded-xl
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
                      focus:outline-none focus:ring-2 focus:ring-indigo-500
-                     bg-white/10 placeholder-gray-400 backdrop-blur-sm transition text-white"
+                     bg-white text-slate-800 placeholder-slate-400 transition"
                 placeholder="Enter your password"
               />
             </div>
           </div>
 
           {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="w-full py-3 rounded-xl border border-indigo-200 bg-white text-indigo-700 font-semibold hover:border-indigo-300 hover:shadow-sm transition"
+            >
+              Demo Fill
+            </button>
 
           <button
             type="submit"
@@ -122,13 +137,14 @@ const handleLogin = async (e) => {
           >
             Login
           </button>
+          </div>
         </form>
 
-        <p className="text-center text-sm text-gray-400 mt-6">
+        <p className="text-center text-sm text-slate-600 mt-6">
           Staff member?{" "}
           <span
             onClick={() => navigate("/admin/login")}
-            className="text-red-400 underline cursor-pointer"
+            className="text-indigo-700 underline cursor-pointer"
           >
             Login here
           </span>

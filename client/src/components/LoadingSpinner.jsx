@@ -1,5 +1,5 @@
 import { motion as Motion } from "framer-motion";
-import BgImg from "../assets/backgroundImage.png";
+import BgImg from "../assets/BackgrounMain.jpg";
 
 const LoadingSpinner = () => {
   return (
