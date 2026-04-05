@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Logo from '../assets/TalenTracerLogo.png'
-import { API_BASE } from "../config/api.js";
+import Logo from '../assets/TalenTracerLogo2.png'
 
 function Navbar() {
   const navigate = useNavigate();
@@ -16,7 +15,7 @@ function Navbar() {
             
             axios.defaults.withCredentials = true;
 
-            const {data} = await axios.post(`${API_BASE}/api/auth/send-verify-otp`);
+            const {data} = await axios.post('http://localhost:4000/api/auth/send-verify-otp');
 
             if(data.success){
 
@@ -42,7 +41,7 @@ function Navbar() {
             
             axios.defaults.withCredentials = true;
 
-            const {data} = await axios.post(`${API_BASE}/api/auth/logout`);
+            const {data} = await axios.post('http://localhost:4000/api/auth/logout');
 
             data.success && setIsLoggedin(false);
             data.success && setUserData(false);
@@ -85,7 +84,7 @@ function Navbar() {
       ) : (
         <button
           onClick={() => navigate("/login")}
-          className="flex items-center gap-2 border border-white/80 rounded-full px-10 py-2 text-white/80
+          className="flex items-center gap-2 border border-black/40 rounded-full px-10 py-2 text-black/60
         hover:bg-gray-100 hover:text-black transition-all cursor-pointer" 
         >
           Login 

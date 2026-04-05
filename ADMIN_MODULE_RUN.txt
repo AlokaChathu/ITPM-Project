@@ -17,7 +17,8 @@ Prerequisites: Node.js 18+, MongoDB running, server/.env with MONGODB_URI and ad
    - Open the Vite URL (e.g. http://localhost:5173)
    - Register admin: /admin/register (first-time)
    - Sign in: /admin/login
-   - Panel: /admin/home
+   - Main admin hub (team UI): /admin/home
+   - System administration & analytics module: /admin/system (also linked from Admin Home sidebar)
 
 4) Two-minute demo flow
    - Dashboard: summary cards, placement trend, user growth, recent activity — “Load sample data” (users + internships)

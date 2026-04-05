@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import NewLogo from '../assets/TalenTracerLogo.png';
 import LoadingSpinner from "../components/LoadingSpinner";
 import BgImg from "../assets/backgroundImage.png";
-import { API_BASE } from "../config/api.js";
 
 function ResetPassword() {
+  const { backendUrl } = useContext(AppContent);
+
   axios.defaults.withCredentials = true;
 
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ function ResetPassword() {
     try {
       setIsLoading(true);
       const { data } = await axios.post(
-        `${API_BASE}/api/auth/send-reset-otp`,
+        "http://localhost:4000/api/auth/send-reset-otp",
         { email }
       );
       setIsLoading(false);
@@ -72,7 +74,7 @@ function ResetPassword() {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const { data } = await axios.post(`${API_BASE}/api/auth/reset-password`, {
+      const { data } = await axios.post('http://localhost:4000/api/auth/reset-password', {
         email, otp, newPassword
       });
       setIsLoading(false);

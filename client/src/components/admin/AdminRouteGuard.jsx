@@ -6,7 +6,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import { API_BASE } from "../../config/api.js";
 
 /**
- * Only authenticated admins (valid adminToken cookie) may access /admin/home/*.
+ * Only authenticated admins (valid adminToken cookie) may access /admin/system/*.
  */
 const AdminRouteGuard = ({ children }) => {
   const navigate = useNavigate();
