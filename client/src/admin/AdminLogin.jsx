@@ -31,14 +31,25 @@ const handleLogin = async (e) => {
     const res = await axios.post("http://localhost:4000/api/admin/login", {
       email,
       password,
+    }, {
+      withCredentials: true
     });
     setIsLoading(false);
 
+    console.log('Login response:', res.data);
+
     if (res.status === 200) {
-      navigate("/admin/home");
+      // Redirect based on role
+      if (res.data.data.role === 'Lecturer') {
+        navigate("/admin/lecture-dashboard");
+      } else {
+        navigate("/admin/home");
+      }
     }
   } catch (err) {
     setIsLoading(false);
+
+    console.error('Login error:', err.response?.data || err.message);
 
     if (err.response && err.response.status === 401) {
 
@@ -77,7 +88,7 @@ const handleLogin = async (e) => {
              shadow-[0_20px_50px_rgba(0,0,0,0.35)]
              text-slate-800 mt-20 mb-10"
       >
-        <h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
+<h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
           Admin Login
         </h2>
         <p className="text-center text-sm text-slate-600 mb-8">
