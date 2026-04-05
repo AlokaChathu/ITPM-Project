@@ -21,6 +21,7 @@ import SystemConfiguration from "./pages/admin/SystemConfiguration";
 import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 import ReportsPage from "./pages/admin/ReportsPage";
 import BackupRestore from "./pages/admin/BackupRestore";
+import NotificationPage from "./pages/admin/NotificationPage";
 import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
           <Route path="analytics" element={<AnalyticsDashboard />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="backup" element={<BackupRestore />} />
+          <Route path="notifications" element={<NotificationPage />} />
         </Route>
         <Route path="/admin" element={<Navigate to="/admin/home" replace />} />
       </Routes>
