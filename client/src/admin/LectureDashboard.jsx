@@ -8,6 +8,7 @@ import {
   FileText, Building, Star, TrendingUp
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { API_BASE } from '../config/api.js';
 import { toast } from 'react-toastify';
 import {
   ResponsiveContainer,
@@ -232,7 +233,7 @@ function LectureDashboard() {
 
     try {
       setIsLoading(true);
-      await axios.get(`http://localhost:4000/api/admin/logout`, {
+      await axios.get(`${API_BASE}/api/admin/logout`, {
         withCredentials: true
       });
       navigate("/admin/login");

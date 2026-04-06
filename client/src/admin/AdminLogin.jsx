@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
+import { API_BASE } from "../config/api.js";
 import BgImg from "../assets/Background1.jpg";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-toastify";
@@ -22,12 +23,7 @@ const handleLogin = async (e) => {
   e.preventDefault();
   try {
     setIsLoading(true);
-    const res = await axios.post("http://localhost:4000/api/admin/login", {
-      email,
-      password,
-    }, {
-      withCredentials: true
-    });
+    const res = await axios.post(`${API_BASE}/api/admin/login`, { email, password }, { withCredentials: true });
     setIsLoading(false);
 
     console.log('Login response:', res.data);
@@ -41,18 +37,37 @@ const handleLogin = async (e) => {
     }
   } catch (err) {
     setIsLoading(false);
+    console.error("Login error:", err.response?.data || err.message);
 
-    console.error('Login error:', err.response?.data || err.message);
+    const status = err.response?.status;
+    const msg = err.response?.data?.message;
 
-    if (err.response && err.response.status === 401) {
-
-      setError("Invalid credentials");
-      toast.error("Invalid credentials");
-      navigate("/admin/login");
-    } else {
-      setError("Something went wrong. Please try again.");
-      toast.error("Something went wrong. Please try again.");
+    if (!err.response) {
+      const hint =
+        err.code === "ERR_NETWORK"
+          ? "Cannot reach the API. From the project root run npm run dev (starts server + client), or cd server && npm run dev."
+          : err.message || "Network error";
+      setError(hint);
+      toast.error(hint);
+      return;
     }
+
+    // Backend uses 400 for wrong email/password (not 401)
+    if (status === 400 || status === 401) {
+      const text = msg || "Invalid email or password";
+      setError(text);
+      toast.error(text);
+      return;
+    }
+
+    if (msg) {
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    setError("Something went wrong. Please try again.");
+    toast.error("Something went wrong. Please try again.");
   }
 };
 
@@ -87,10 +102,18 @@ const handleLogin = async (e) => {
         <p className="text-center text-sm text-slate-600 mb-2">
           Enter your credentials to continue
         </p>
-        <p className="mb-8 text-center text-xs leading-relaxed text-slate-500">
+        <p className="mb-4 text-center text-xs leading-relaxed text-slate-500">
           <span className="font-semibold text-slate-600">University admins</span> open System administration
           &amp; analytics. <span className="font-semibold text-slate-600">Supervisors (Lecturer)</span> open the
           Student Performance Supervisor dashboard — same login; your role sets where you land.
+        </p>
+        <p className="mb-8 rounded-lg bg-amber-50 px-3 py-2 text-center text-xs leading-relaxed text-amber-900 border border-amber-100">
+          This form is only for <span className="font-semibold">staff accounts</span> stored in the admin database — not
+          the same as student sign-in on <span className="font-semibold">/login</span>. First time?{" "}
+          <Link to="/admin/register" className="font-semibold text-indigo-700 underline underline-offset-2">
+            Register staff account
+          </Link>
+          .
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6">
