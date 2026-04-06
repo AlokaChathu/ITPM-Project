@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { AppContent } from '../context/AppContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Logo from '../assets/TalenTracerLogo2.png'; // Make sure this path is correct!
@@ -21,7 +21,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 function CustomerHome() {
   const { userData, setUserData, setIsLoggedin } = useContext(AppContent);
   const navigate = useNavigate();
-  const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Helper for the avatar

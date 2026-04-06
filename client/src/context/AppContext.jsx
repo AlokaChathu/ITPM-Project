@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -29,11 +30,10 @@ export const AppContextProvider = (props)=>{
 
     }
 
-    useEffect(()=>{
-
+    useEffect(() => {
         getAuthState();
-
-    },[])
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+    }, []);
 
     const getUserData = async () =>{
         try {

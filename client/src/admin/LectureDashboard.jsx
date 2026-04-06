@@ -8,6 +8,7 @@ import {
   FileText, Building, Star, TrendingUp
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { API_BASE } from '../config/api.js';
 import { toast } from 'react-toastify';
 import {
   ResponsiveContainer,
@@ -40,7 +41,7 @@ function LectureDashboard() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showGradingModal, setShowGradingModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [, setSelectedStudent] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedGradingStudent, setSelectedGradingStudent] = useState(null);
@@ -86,23 +87,10 @@ function LectureDashboard() {
   });
   const navigate = useNavigate();
 
-  // Color scheme: 60% Primary (Blue), 30% Secondary (Teal), 10% Accent (Orange)
-  const colors = {
-    primary: '#1e40af',      // Blue-800
-    primaryLight: '#3b82f6',  // Blue-500
-    secondary: '#0f766e',     // Teal-700
-    secondaryLight: '#14b8a6', // Teal-500
-    accent: '#f97316',        // Orange-500
-    accentLight: '#fb923c',   // Orange-400
-    background: '#f8fafc',    // Slate-50
-    cardBg: '#ffffff',        // White
-    text: '#1e293b',         // Slate-800
-    textLight: '#64748b'      // Slate-500
-  };
-
   useEffect(() => {
     fetchLecturerData();
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial load only
   }, []);
 
   const fetchLecturerData = async () => {
@@ -245,7 +233,7 @@ function LectureDashboard() {
 
     try {
       setIsLoading(true);
-      await axios.get(`http://localhost:4000/api/admin/logout`, {
+      await axios.get(`${API_BASE}/api/admin/logout`, {
         withCredentials: true
       });
       navigate("/admin/login");
@@ -1178,21 +1166,32 @@ function LectureDashboard() {
                 <BookOpen className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Lecture Dashboard</h1>
+                <h1 className="text-2xl font-bold text-white">Student Performance Supervisor</h1>
+                <p className="text-xs font-medium text-purple-300/90">Viva scheduling, reports, company feedback &amp; final grading</p>
                 {lecturerData && (
-                  <span className="text-sm text-purple-200">
+                  <span className="mt-1 block text-sm text-purple-200">
                     Welcome back, {lecturerData.fullName}
                   </span>
                 )}
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => navigate("/admin/home")}
+                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              >
+                Coordinator hub
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { getAdminJwtSecret } from "../config/jwtSecret.js";
 
 const adminAuth = async (req, res, next) => {
   try {
@@ -11,10 +12,15 @@ const adminAuth = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(
-      adminToken,
-      process.env.JWT_SECRET_ADMIN
-    );
+    const adminSecret = getAdminJwtSecret();
+    if (!adminSecret) {
+      return res.status(500).json({
+        success: false,
+        message: "Server admin JWT secret is not configured",
+      });
+    }
+
+    const decoded = jwt.verify(adminToken, adminSecret);
 
     if (!decoded?.id) {
       return res.status(401).json({
@@ -24,9 +30,8 @@ const adminAuth = async (req, res, next) => {
     }
 
     req.adminId = decoded.id;
-   
-    next();
 
+    next();
   } catch (error) {
     return res.status(401).json({
       success: false,
