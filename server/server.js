@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
 import cookieParser from "cookie-parser";
 import connectDB from "./config/mongodb.js";
 import authRouter from "./routes/authRoutes.js";

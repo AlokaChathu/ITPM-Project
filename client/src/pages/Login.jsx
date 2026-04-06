@@ -29,12 +29,17 @@ function Login() {
   const { getUserData } = useContext(AppContent);
 
   const [state, setState] = useState("Login");
+  const [userType, setUserType] = useState("student");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [website, setWebsite] = useState("");
+  const [companyRegNumber, setCompanyRegNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
@@ -59,7 +64,8 @@ function Login() {
   const validateField = (field, value) => {
     switch (field) {
       case 'name':
-        const nameRegex = /^[A-Za-z\s]{5,20}$/;
+      case 'companyName':
+        const nameRegex = /^[A-Za-z\s]{2,50}$/;
         return nameRegex.test(value);
       case 'email':
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,6 +77,12 @@ function Login() {
       case 'phone':
         return value && value.trim().length > 0;
       case 'address':
+        return value && value.trim().length > 0;
+      case 'industry':
+        return value && value.trim().length > 0;
+      case 'website':
+        return !value || /^https?:\/\/.+/.test(value) || /^[^\s@]+\.[^\s@]+$/.test(value);
+      case 'companyRegNumber':
         return value && value.trim().length > 0;
       default:
         return true;
@@ -136,29 +148,51 @@ function Login() {
 
   const validateForm = () => {
     if (state === "Sign Up") {
-      const fields = ['name', 'email', 'password', 'age', 'phone', 'address'];
       let isValid = true;
       
-      fields.forEach(field => {
-        let value;
-        switch (field) {
-          case 'name': value = name; break;
-          case 'email': value = email; break;
-          case 'password': value = password; break;
-          case 'age': value = age; break;
-          case 'phone': value = phone; break;
-          case 'address': value = address; break;
-          default: value = '';
-        }
-        
-        if (!validateField(field, value)) {
-          isValid = false;
-          setTouchedFields(prev => ({ ...prev, [field]: true }));
-        }
-      });
+      if (userType === 'student') {
+        const studentFields = ['name', 'email', 'password', 'age', 'phone', 'address'];
+        studentFields.forEach(field => {
+          let value;
+          switch (field) {
+            case 'name': value = name; break;
+            case 'email': value = email; break;
+            case 'password': value = password; break;
+            case 'age': value = age; break;
+            case 'phone': value = phone; break;
+            case 'address': value = address; break;
+            default: value = '';
+          }
+          
+          if (!validateField(field, value)) {
+            isValid = false;
+            setTouchedFields(prev => ({ ...prev, [field]: true }));
+          }
+        });
+      } else {
+        const companyFields = ['companyName', 'email', 'password', 'phone', 'address', 'industry', 'companyRegNumber'];
+        companyFields.forEach(field => {
+          let value;
+          switch (field) {
+            case 'companyName': value = companyName; break;
+            case 'email': value = email; break;
+            case 'password': value = password; break;
+            case 'phone': value = phone; break;
+            case 'address': value = address; break;
+            case 'industry': value = industry; break;
+            case 'companyRegNumber': value = companyRegNumber; break;
+            default: value = '';
+          }
+          
+          if (!validateField(field, value)) {
+            isValid = false;
+            setTouchedFields(prev => ({ ...prev, [field]: true }));
+          }
+        });
+      }
       
       if (!isValid) {
-        toast.error("Please fix the errors in the form");
+        toast.error("Please fix errors in the form");
         return false;
       }
     } else {
@@ -195,7 +229,19 @@ function Login() {
 
       const payload =
         state === "Sign Up"
-          ? { name, email, password, age, phone, address }
+          ? { 
+              userType, 
+              name, 
+              email, 
+              password, 
+              age, 
+              phone, 
+              address,
+              companyName,
+              industry,
+              website,
+              companyRegNumber
+            }
           : { email, password };
 
       const { data } = await axios.post(url, payload);
@@ -204,7 +250,13 @@ function Login() {
       if (data.success) {
         toast.success(state === "Sign Up" ? "Account created successfully!" : "Login successful!");
         await getUserData();
-        navigate("/");
+        
+        // Redirect based on user type
+        if (data.data?.userType === 'company') {
+          navigate("/company-home");
+        } else {
+          navigate("/");
+        }
       } else {
         toast.error(data.message);
       }
@@ -267,6 +319,38 @@ function Login() {
         {/* Form */}
         <form onSubmit={onSubmitHandler} className="space-y-4">
           {state === "Sign Up" && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Account Type</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUserType('student')}
+                  className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                    userType === 'student'
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <User size={16} className="inline mr-2" />
+                  Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserType('company')}
+                  className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                    userType === 'company'
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <Shield size={16} className="inline mr-2" />
+                  Company
+                </button>
+              </div>
+            </div>
+          )}
+
+          {state === "Sign Up" && userType === 'student' && (
             <div className="transform transition-all duration-200">
               <InputField
                 Icon={User}
@@ -277,6 +361,21 @@ function Login() {
                 onBlur={() => handleBlur('name')}
                 error={getFieldError('name', name)}
                 touched={touchedFields.name}
+              />
+            </div>
+          )}
+
+          {state === "Sign Up" && userType === 'company' && (
+            <div className="transform transition-all duration-200">
+              <InputField
+                Icon={User}
+                placeholder="Company Name"
+                value={companyName}
+                onChange={setCompanyName}
+                onFocus={() => setFocusedField('companyName')}
+                onBlur={() => handleBlur('companyName')}
+                error={getFieldError('companyName', companyName)}
+                touched={touchedFields.companyName}
               />
             </div>
           )}
@@ -324,7 +423,7 @@ function Login() {
             </div>
           )}
 
-          {state === "Sign Up" && (
+          {state === "Sign Up" && userType === 'student' && (
             <>
               <div className="transform transition-all duration-200">
                 <InputField
@@ -337,6 +436,75 @@ function Login() {
                   onBlur={() => handleBlur('age')}
                   error={getFieldError('age', age)}
                   touched={touchedFields.age}
+                />
+              </div>
+
+              <div className="transform transition-all duration-200">
+                <InputField
+                  Icon={Phone}
+                  placeholder="Phone Number"
+                  value={phone}
+                  onChange={setPhone}
+                  onFocus={() => setFocusedField('phone')}
+                  onBlur={() => handleBlur('phone')}
+                  error={getFieldError('phone', phone)}
+                  touched={touchedFields.phone}
+                />
+              </div>
+
+              <div className="transform transition-all duration-200">
+                <InputField
+                  Icon={MapPin}
+                  placeholder="Address"
+                  value={address}
+                  onChange={setAddress}
+                  onFocus={() => setFocusedField('address')}
+                  onBlur={() => handleBlur('address')}
+                  error={getFieldError('address', address)}
+                  touched={touchedFields.address}
+                />
+              </div>
+            </>
+          )}
+
+          {state === "Sign Up" && userType === 'company' && (
+            <>
+              <div className="transform transition-all duration-200">
+                <InputField
+                  Icon={Shield}
+                  placeholder="Industry"
+                  value={industry}
+                  onChange={setIndustry}
+                  onFocus={() => setFocusedField('industry')}
+                  onBlur={() => handleBlur('industry')}
+                  error={getFieldError('industry', industry)}
+                  touched={touchedFields.industry}
+                />
+              </div>
+
+              <div className="transform transition-all duration-200">
+                <InputField
+                  Icon={Mail}
+                  placeholder="Website (Optional)"
+                  value={website}
+                  onChange={setWebsite}
+                  onFocus={() => setFocusedField('website')}
+                  onBlur={() => handleBlur('website')}
+                  error={getFieldError('website', website)}
+                  touched={touchedFields.website}
+                />
+              </div>
+
+              <div className="transform transition-all duration-200">
+                <InputField
+                  Icon={Shield}
+                  placeholder="Company Registration Number"
+                  value={companyRegNumber}
+                  onChange={setCompanyRegNumber}
+                  onFocus={() => setFocusedField('companyRegNumber')}
+                  onBlur={() => handleBlur('companyRegNumber')}
+                  error={getFieldError('companyRegNumber', companyRegNumber)}
+                  touched={touchedFields.companyRegNumber}
                 />
               </div>
 
