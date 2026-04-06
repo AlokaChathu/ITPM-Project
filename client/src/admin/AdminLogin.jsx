@@ -8,9 +8,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-toastify";
 import NewLogo from "../assets/TalenTracerLogo2.png";
 
-import {
-  Mail,Lock
-} from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 
 function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -19,64 +17,59 @@ function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  try {
-    setIsLoading(true);
-    const res = await axios.post(`${API_BASE}/api/admin/login`, { email, password }, { withCredentials: true });
-    setIsLoading(false);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      const res = await axios.post(`${API_BASE}/api/admin/login`, { email, password }, { withCredentials: true });
+      setIsLoading(false);
 
-    console.log('Login response:', res.data);
-
-    if (res.status === 200) {
-      if (res.data.data.role === "Lecturer") {
-        navigate("/supervisor/dashboard");
-      } else {
-        navigate("/admin/system");
+      if (res.status === 200) {
+        if (res.data.data.role === "Lecturer") {
+          navigate("/supervisor/dashboard");
+        } else {
+          navigate("/admin/system");
+        }
       }
+    } catch (err) {
+      setIsLoading(false);
+      console.error("Login error:", err.response?.data || err.message);
+
+      const status = err.response?.status;
+      const msg = err.response?.data?.message;
+
+      if (!err.response) {
+        const hint =
+          err.code === "ERR_NETWORK"
+            ? "Cannot reach the API. From the project root run npm run dev (starts server + client), or cd server && npm run dev."
+            : err.message || "Network error";
+        setError(hint);
+        toast.error(hint);
+        return;
+      }
+
+      if (status === 400 || status === 401) {
+        const text = msg || "Invalid email or password";
+        setError(text);
+        toast.error(text);
+        return;
+      }
+
+      if (msg) {
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+
+      setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     }
-  } catch (err) {
-    setIsLoading(false);
-    console.error("Login error:", err.response?.data || err.message);
-
-    const status = err.response?.status;
-    const msg = err.response?.data?.message;
-
-    if (!err.response) {
-      const hint =
-        err.code === "ERR_NETWORK"
-          ? "Cannot reach the API. From the project root run npm run dev (starts server + client), or cd server && npm run dev."
-          : err.message || "Network error";
-      setError(hint);
-      toast.error(hint);
-      return;
-    }
-
-    // Backend uses 400 for wrong email/password (not 401)
-    if (status === 400 || status === 401) {
-      const text = msg || "Invalid email or password";
-      setError(text);
-      toast.error(text);
-      return;
-    }
-
-    if (msg) {
-      setError(msg);
-      toast.error(msg);
-      return;
-    }
-
-    setError("Something went wrong. Please try again.");
-    toast.error("Something went wrong. Please try again.");
-  }
-};
-
+  };
 
   return isLoading ? (
     <LoadingSpinner />
   ) : (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
- 
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${BgImg})` }}
@@ -96,20 +89,16 @@ const handleLogin = async (e) => {
              shadow-[0_20px_50px_rgba(0,0,0,0.35)]
              text-slate-800 mt-20 mb-10"
       >
-<h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
-          Admin Login
-        </h2>
-        <p className="text-center text-sm text-slate-600 mb-2">
-          Enter your credentials to continue
-        </p>
+        <h2 className="text-3xl text-slate-900 font-bold text-center mb-2">Admin Login</h2>
+        <p className="text-center text-sm text-slate-600 mb-2">Enter your credentials to continue</p>
         <p className="mb-4 text-center text-xs leading-relaxed text-slate-500">
-          <span className="font-semibold text-slate-600">University admins</span> open System administration
-          &amp; analytics. <span className="font-semibold text-slate-600">Supervisors (Lecturer)</span> open the
-          Student Performance Supervisor dashboard — same login; your role sets where you land.
+          <span className="font-semibold text-slate-600">University admins</span> open System administration &amp;
+          analytics. <span className="font-semibold text-slate-600">Supervisors (Lecturer)</span> open the Student
+          Performance Supervisor dashboard — same login; your role sets where you land.
         </p>
-        <p className="mb-8 rounded-lg bg-amber-50 px-3 py-2 text-center text-xs leading-relaxed text-amber-900 border border-amber-100">
-          This form is only for <span className="font-semibold">staff accounts</span> stored in the admin database — not
-          the same as student sign-in on <span className="font-semibold">/login</span>. First time?{" "}
+        <p className="mb-8 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-center text-xs leading-relaxed text-amber-900">
+          This form is only for <span className="font-semibold">staff accounts</span> stored in the admin database —
+          not the same as student sign-in on <span className="font-semibold">/login</span>. First time?{" "}
           <Link to="/admin/register" className="font-semibold text-indigo-700 underline underline-offset-2">
             Register staff account
           </Link>
@@ -117,7 +106,6 @@ const handleLogin = async (e) => {
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6">
-       
           <div className="relative">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -126,9 +114,8 @@ const handleLogin = async (e) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500
-                     bg-white text-slate-800 placeholder-slate-400 transition"
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-slate-800
+                     placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter your email"
               />
             </div>
@@ -142,38 +129,37 @@ const handleLogin = async (e) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500
-                     bg-white text-slate-800 placeholder-slate-400 transition"
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-slate-800
+                     placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter your password"
               />
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl
-                 bg-gradient-to-r from-indigo-500 to-indigo-900
-                 hover:scale-[1.02] transition font-semibold cursor-pointer text-white/90"
+            className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-900 py-3
+                 font-semibold text-white/90 transition hover:scale-[1.02]"
           >
             Login
           </button>
         </form>
 
-        <p className="text-center text-sm text-slate-600 mt-6">
+        <p className="mt-6 text-center text-sm text-slate-600">
           Staff member?{" "}
           <span
             onClick={() => navigate("/admin/login")}
-            className="text-indigo-700 underline cursor-pointer"
+            className="cursor-pointer text-indigo-700 underline"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && navigate("/admin/login")}
           >
             Login here
           </span>
         </p>
       </div>
-
-
     </div>
   );
 }
