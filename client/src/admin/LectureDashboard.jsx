@@ -9,6 +9,23 @@ import {
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'react-toastify';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  AreaChart,
+  Area
+} from 'recharts';
 
 function LectureDashboard() {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +44,12 @@ function LectureDashboard() {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedGradingStudent, setSelectedGradingStudent] = useState(null);
+  
+  // Chart data states
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [gradeDistribution, setGradeDistribution] = useState([]);
+  const [companyRatings, setCompanyRatings] = useState([]);
+  const [internshipProgress, setInternshipProgress] = useState([]);
   const [gradingForm, setGradingForm] = useState({
     vivaScore: '',
     finalScore: 0,
@@ -94,7 +117,9 @@ function LectureDashboard() {
       { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', status: 'Internship Completed', reportMark: 85, companyRating: 4.5, vivaScore: 88, finalScore: 87.3, finalGrade: 'A' },
       { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '098-765-4321', status: 'Internship Completed', reportMark: 92, companyRating: 4.8, vivaScore: 90, finalScore: 90.8, finalGrade: 'A+' },
       { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '555-123-4567', status: 'Internship Completed', reportMark: null, companyRating: 4.2, vivaScore: null, finalScore: null, finalGrade: null },
-      { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '777-888-9999', status: 'In Progress', reportMark: null, companyRating: null, vivaScore: null, finalScore: null, finalGrade: null }
+      { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '777-888-9999', status: 'In Progress', reportMark: null, companyRating: null, vivaScore: null, finalScore: null, finalGrade: null },
+      { id: 5, name: 'Tom Brown', email: 'tom@example.com', phone: '333-444-5555', status: 'Graded', reportMark: 78, companyRating: 4.0, vivaScore: 82, finalScore: 80.0, finalGrade: 'B' },
+      { id: 6, name: 'Emily Davis', email: 'emily@example.com', phone: '666-777-8888', status: 'Graded', reportMark: 95, companyRating: 4.9, vivaScore: 93, finalScore: 94.2, finalGrade: 'A+' }
     ]);
     
     setVivaSchedules([
@@ -161,7 +186,43 @@ function LectureDashboard() {
     
     setCompanyFeedbacks([
       { id: 1, studentId: 1, studentName: 'John Doe', company: 'Tech Corp', rating: 4.5, feedback: 'Excellent performance', date: '2025-04-01' },
-      { id: 2, studentId: 2, studentName: 'Jane Smith', company: 'Digital Solutions', rating: 4.8, feedback: 'Outstanding work', date: '2025-04-02' }
+      { id: 2, studentId: 2, studentName: 'Jane Smith', company: 'Digital Solutions', rating: 4.8, feedback: 'Outstanding work', date: '2025-04-02' },
+      { id: 3, studentId: 5, studentName: 'Tom Brown', company: 'Innovation Labs', rating: 4.0, feedback: 'Good progress', date: '2025-04-03' },
+      { id: 4, studentId: 6, studentName: 'Emily Davis', company: 'Tech Solutions', rating: 4.9, feedback: 'Exceptional work', date: '2025-04-04' }
+    ]);
+
+    // Chart data
+    setMonthlyData([
+      { month: 'Jan', submissions: 12, completed: 8, average: 75 },
+      { month: 'Feb', submissions: 15, completed: 12, average: 78 },
+      { month: 'Mar', submissions: 18, completed: 14, average: 82 },
+      { month: 'Apr', submissions: 22, completed: 16, average: 85 },
+      { month: 'May', submissions: 20, completed: 18, average: 88 },
+      { month: 'Jun', submissions: 25, completed: 20, average: 90 }
+    ]);
+
+    setGradeDistribution([
+      { grade: 'A+', count: 8, percentage: 25 },
+      { grade: 'A', count: 12, percentage: 38 },
+      { grade: 'B+', count: 6, percentage: 19 },
+      { grade: 'B', count: 4, percentage: 13 },
+      { grade: 'C+', count: 2, percentage: 5 }
+    ]);
+
+    setCompanyRatings([
+      { company: 'Tech Corp', rating: 4.5, students: 3 },
+      { company: 'Digital Solutions', rating: 4.8, students: 2 },
+      { company: 'Analytics Pro', rating: 4.2, students: 1 },
+      { company: 'Innovation Labs', rating: 4.0, students: 2 },
+      { company: 'Tech Solutions', rating: 4.9, students: 1 }
+    ]);
+
+    setInternshipProgress([
+      { stage: 'Registration', count: 30, completed: 28 },
+      { stage: 'Internship', count: 25, completed: 20 },
+      { stage: 'Report', count: 20, completed: 15 },
+      { stage: 'Viva', count: 15, completed: 12 },
+      { stage: 'Grading', count: 12, completed: 8 }
     ]);
   };
 
@@ -557,45 +618,126 @@ function LectureDashboard() {
     setGradingForm({ vivaScore: '', finalScore: 0, finalGrade: '' });
   };
 
-  const renderOverview = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-        <div className="flex items-center justify-between mb-4">
-          <Users size={32} />
-          <span className="text-3xl font-bold">{students.length}</span>
-        </div>
-        <h3 className="text-lg font-semibold">Total Students</h3>
-        <p className="text-blue-100 text-sm">Active interns</p>
-      </div>
+  const renderOverview = () => {
+    const COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#a855f7'];
+    
+    return (
+      <div className="space-y-8">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <Users size={32} />
+              <span className="text-3xl font-bold">{students.length}</span>
+            </div>
+            <h3 className="text-lg font-semibold">Total Students</h3>
+            <p className="text-blue-100 text-sm">Active interns</p>
+          </div>
 
-      <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-        <div className="flex items-center justify-between mb-4">
-          <Calendar size={32} />
-          <span className="text-3xl font-bold">{vivaSchedules.length}</span>
-        </div>
-        <h3 className="text-lg font-semibold">Viva Schedules</h3>
-        <p className="text-teal-100 text-sm">Pending & completed</p>
-      </div>
+          <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <Calendar size={32} />
+              <span className="text-3xl font-bold">{vivaSchedules.length}</span>
+            </div>
+            <h3 className="text-lg font-semibold">Viva Schedules</h3>
+            <p className="text-teal-100 text-sm">Pending & completed</p>
+          </div>
 
-      <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-        <div className="flex items-center justify-between mb-4">
-          <FileText size={32} />
-          <span className="text-3xl font-bold">{internshipReports.length}</span>
-        </div>
-        <h3 className="text-lg font-semibold">Reports</h3>
-        <p className="text-orange-100 text-sm">To review</p>
-      </div>
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <FileText size={32} />
+              <span className="text-3xl font-bold">{internshipReports.length}</span>
+            </div>
+            <h3 className="text-lg font-semibold">Reports</h3>
+            <p className="text-orange-100 text-sm">To review</p>
+          </div>
 
-      <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-        <div className="flex items-center justify-between mb-4">
-          <Star size={32} />
-          <span className="text-3xl font-bold">{companyFeedbacks.length}</span>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <Star size={32} />
+              <span className="text-3xl font-bold">{companyFeedbacks.length}</span>
+            </div>
+            <h3 className="text-lg font-semibold">Feedbacks</h3>
+            <p className="text-purple-100 text-sm">Company reviews</p>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold">Feedbacks</h3>
-        <p className="text-purple-100 text-sm">Company reviews</p>
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Monthly Performance Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Performance</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area type="monotone" dataKey="submissions" stackId="1" stroke="#4f46e5" fill="#4f46e5" name="Submissions" />
+                <Area type="monotone" dataKey="completed" stackId="1" stroke="#10b981" fill="#10b981" name="Completed" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Grade Distribution Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Grade Distribution</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={gradeDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ grade, percentage }) => `${grade}: ${percentage}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="count"
+                >
+                  {gradeDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Company Ratings Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Ratings</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={companyRatings}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="company" angle={-45} textAnchor="end" height={80} />
+                <YAxis domain={[0, 5]} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="rating" fill="#f59e0b" name="Average Rating" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Internship Progress Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Internship Progress</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={internshipProgress}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="stage" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="count" stroke="#4f46e5" strokeWidth={2} name="Total" />
+                <Line type="monotone" dataKey="completed" stroke="#10b981" strokeWidth={2} name="Completed" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderStudents = () => {
     // Filter students based on search term match
