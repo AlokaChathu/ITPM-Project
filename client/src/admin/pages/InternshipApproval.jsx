@@ -34,30 +34,9 @@ const InternshipApproval = () => {
     }
   };
 
-  const seed = async () => {
-    try {
-      const res = await adminService.seedInternships();
-      if (res.success) {
-        toast.success(res.message || "Sample data ready");
-        load();
-      }
-    } catch {
-      toast.error("Could not add sample data");
-    }
-  };
-
   return (
     <section>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">Internship approval</h2>
-        <button
-          type="button"
-          onClick={seed}
-          className="rounded-md bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-        >
-          Load sample internships
-        </button>
-      </div>
+      <h2 className="mb-4 text-xl font-bold tracking-tight text-slate-900">Internship approval</h2>
       <p className="mb-4 text-sm font-medium text-slate-600">
         Review submitted postings. Approve or reject each internship before it is visible to students.
       </p>
@@ -135,7 +114,7 @@ const InternshipApproval = () => {
             {!loading && rows.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-500">
-                  No internship submissions yet. Use &quot;Load sample internships&quot; for a demo.
+                  No internship submissions yet.
                 </td>
               </tr>
             )}

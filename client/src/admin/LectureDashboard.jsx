@@ -1165,21 +1165,32 @@ function LectureDashboard() {
                 <BookOpen className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Lecture Dashboard</h1>
+                <h1 className="text-2xl font-bold text-white">Student Performance Supervisor</h1>
+                <p className="text-xs font-medium text-purple-300/90">Viva scheduling, reports, company feedback &amp; final grading</p>
                 {lecturerData && (
-                  <span className="text-sm text-purple-200">
+                  <span className="mt-1 block text-sm text-purple-200">
                     Welcome back, {lecturerData.fullName}
                   </span>
                 )}
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => navigate("/admin/home")}
+                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              >
+                Coordinator hub
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>

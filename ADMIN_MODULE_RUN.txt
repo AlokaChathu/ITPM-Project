@@ -18,14 +18,16 @@ Prerequisites: Node.js 18+, MongoDB running, server/.env with MONGODB_URI and ad
    - Register admin: /admin/register (first-time)
    - Sign in: /admin/login
    - Main admin hub (team UI): /admin/home
-   - System administration & analytics module: /admin/system (also linked from Admin Home sidebar)
+   - After university admin login: /admin/system (System administration & analytics)
+   - Supervisors (Lecturer role): /supervisor/dashboard (Student Performance Supervisor — separate from system admin)
+   - Supervisor coordinator tools (readiness, jobs, directory): /admin/home
    - Source: client/src/admin/pages/ (module screens); shared admin chrome: client/src/components/admin/
 
-4) Two-minute demo flow
-   - Dashboard: summary cards, placement trend, user growth, recent activity — “Load sample data” (users + internships)
-   - Users: Fill sample data / Load demo users — Add; Edit; Activate; Deactivate; Delete (REST DELETE)
+4) Module walkthrough
+   - Dashboard: summary cards, placement trend, user growth, recent activity
+   - Users: Add; Edit; Activate; Deactivate; Delete (REST DELETE)
    - Roles: Assign role (Admin, Student, Supervisor, Company)
-   - Internships: Load sample internships — Approve / Reject
+   - Internships: Approve / Reject submitted postings
    - Configuration: GPA 0–4, duration, weights totaling 100%
    - Analytics: placement, GPA bands, internship categories (from GET /api/analytics)
    - Reports: CSV download + Print / PDF
@@ -36,14 +38,12 @@ API base (dev): Vite proxies /api to Express (default port 4000).
 Integration module (all require admin cookie except public auth):
   GET        /api/dashboard
   GET/POST   /api/users
-  POST       /api/users/seed
   PATCH      /api/users/:id
   DELETE     /api/users/:id
   GET        /api/roles
   PATCH      /api/roles/:id
   GET/POST   /api/config
   GET        /api/internships
-  POST       /api/internships/seed
   PATCH      /api/internships/:id
   GET        /api/analytics
   GET        /api/reports

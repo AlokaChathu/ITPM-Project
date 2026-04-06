@@ -56,17 +56,6 @@ const NotificationForm = ({ onSent }) => {
     setErrors({});
   };
 
-  const fillDummy = () => {
-    setForm({
-      title: "Internship intake reminder",
-      message:
-        "All eligible students are reminded to complete internship applications before the published deadline. Contact the coordinator for support.",
-      recipientType: "Student",
-      priority: "Medium",
-    });
-    setErrors({});
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -100,15 +89,8 @@ const NotificationForm = ({ onSent }) => {
 
   return (
     <section className="rounded-xl border border-indigo-200/60 bg-white/95 p-5 shadow-sm md:p-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold text-indigo-950">Compose notification</h2>
-        <button
-          type="button"
-          onClick={fillDummy}
-          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
-        >
-          Fill sample data
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
