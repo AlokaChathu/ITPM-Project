@@ -4,11 +4,19 @@ import userModel from "../models/userModel.js";
 import tranporter from "../config/nodemailer.js";
 
 export const register = async (req, res) => {
-  const { name, email, password, age, phone, address } = req.body;
-
-  if (!name || !email || !password || !age || !phone || !address) {
-    return res.json({ success: false, message: "Missing Details" });
-  }
+  const { 
+    userType, 
+    name, 
+    email, 
+    password, 
+    age, 
+    phone, 
+    address,
+    companyName,
+    industry,
+    website,
+    companyRegNumber
+  } = req.body;
 
   try {
     const existingUser = await userModel.findOne({ email });
@@ -19,16 +27,30 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Include age, phone, address here
-    const user = new userModel({
-      name,
+    // Create user object based on user type
+    const userData = {
+      userType: userType || 'student',
       email,
       password: hashedPassword,
-      age,
-      phone,
-      address
-    });
+      phone
+    };
 
+    if (userType === 'company') {
+      // Company-specific fields
+      userData.companyName = companyName;
+      userData.industry = industry;
+      userData.website = website;
+      userData.companyRegNumber = companyRegNumber;
+      userData.address = address;
+      userData.isAccountVerified = true; // Auto-verify companies
+    } else {
+      // Student-specific fields
+      userData.name = name;
+      userData.age = age;
+      userData.address = address;
+    }
+
+    const user = new userModel(userData);
     await user.save();
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -42,11 +64,13 @@ export const register = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: 'Welcome to AUTH System',
-      html: `
+    // Send welcome email only for students
+    if (userType !== 'company') {
+      const mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: email,
+        subject: 'Welcome to AUTH System',
+        html: `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; padding: 30px; border-radius: 12px; background: #f4f6f8; border: 1px solid #e0e0e0;">
       
       <div style="text-align: center; padding-bottom: 20px;">
@@ -59,7 +83,7 @@ export const register = async (req, res) => {
           Hello ${email},
         </p>
         <p style="color: #555; font-size: 16px;">
-          We’re excited to have you on board. Your account has been successfully created with the email ID: <strong>${email}</strong>.
+          We're excited to have you on board. Your account has been successfully created with the email ID: <strong>${email}</strong>.
         </p>
         <p style="color: #555; font-size: 16px;">
           You can now explore our platform and start using all the features we offer.
@@ -74,12 +98,12 @@ export const register = async (req, res) => {
       </div>
     </div>
   `
-    };
+      };
 
+      await tranporter.sendMail(mailOptions);
+    }
 
-    await tranporter.sendMail(mailOptions);
-
-    return res.json({ success: true });
+    return res.json({ success: true, data: { userType: user.userType } });
 
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -121,7 +145,13 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({ success: true });
+    return res.json({ 
+      success: true, 
+      data: { 
+        userType: user.userType,
+        name: user.name || user.companyName
+      } 
+    });
 
   } catch (error) {
     return res.json({ success: false, message: error.message });

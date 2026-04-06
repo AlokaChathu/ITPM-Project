@@ -15,6 +15,7 @@ import AdminHome from './admin/AdminHome'
 import LectureDashboard from './admin/LectureDashboard'
 import MyProfile from './pages/MyProfile'
 import CustomerHome from './pages/CustomerHome'
+import CompanyDashboard from './pages/CompanyDashboard'
 import AdminReadiness from './admin/AdminReadiness';
 import StudentReadiness from './pages/StudentReadiness';
 import AdminJobs from './admin/AdminJobs';
@@ -33,6 +34,7 @@ function App() {
         <Route path='/reset-password' element={<ResetPassword/>}/>
         <Route path='/my-profile' element={<MyProfile/>}/>
         <Route path='/customer-home' element={<CustomerHome/>}/>
+        <Route path='/company-home' element={<CompanyDashboard/>}/>
         <Route path='/admin/readiness' element={<AdminReadiness/>}/>
 
         {/* admin */}
