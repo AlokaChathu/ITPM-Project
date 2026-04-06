@@ -19,8 +19,8 @@ function AdminLogin() {
   const navigate = useNavigate();
 
   const fillDemo = () => {
-    setEmail("admin2@gmail.com");
-    setPassword("admin123");
+    setEmail("ravindusathruwan80@gmail.com");
+    setPassword("Abc12#");
     setError("");
   };
 
@@ -39,10 +39,14 @@ const handleLogin = async (e) => {
     console.log('Login response:', res.data);
 
     if (res.status === 200) {
-      // Redirect based on role
+      // Redirect based on role and credentials
       if (res.data.data.role === 'Lecturer') {
         navigate("/admin/lecture-dashboard");
+      } else if (res.data.data.email === 'bimalgunawardana3@gmail.com' || res.data.data.email === 'ravindusathruwan80@gmail.com') {
+        // Branch credentials go to AdminDashboard
+        navigate("/admin/system");
       } else {
+        // Regular admins go to AdminHome
         navigate("/admin/home");
       }
     }
