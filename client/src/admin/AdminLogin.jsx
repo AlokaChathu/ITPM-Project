@@ -19,8 +19,8 @@ function AdminLogin() {
   const navigate = useNavigate();
 
   const fillDemo = () => {
-    setEmail("ravindusathruwan80@gmail.com");
-    setPassword("Abc12#");
+    setEmail("admin2@gmail.com");
+    setPassword("admin123");
     setError("");
   };
 
@@ -43,10 +43,10 @@ function AdminLogin() {
         if (res.data.data.role === 'Lecturer') {
           navigate("/supervisor/dashboard");
         } else if (res.data.data.email === 'bimalgunawardana3@gmail.com' || res.data.data.email === 'ravindusathruwan80@gmail.com') {
-          // Branch credentials go to AdminDashboard
+          // Special analytics credentials go to AdminDashboard
           navigate("/admin/system");
         } else {
-          // Regular admins go to AdminHome
+          // Regular admins go to AdminHome (main branch behavior)
           navigate("/admin/home");
         }
       }
@@ -55,7 +55,7 @@ function AdminLogin() {
 
       console.error('Login error:', err.response?.data || err.message);
 
-    if (err.response && err.response.status === 401) {
+      if (err.response && err.response.status === 401) {
 
       setError("Invalid credentials");
       toast.error("Invalid credentials");
@@ -95,13 +95,8 @@ function AdminLogin() {
 <h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
           Admin Login
         </h2>
-        <p className="text-center text-sm text-slate-600 mb-2">
+        <p className="text-center text-sm text-slate-600 mb-8">
           Enter your credentials to continue
-        </p>
-        <p className="mb-8 text-center text-xs leading-relaxed text-slate-500">
-          <span className="font-semibold text-slate-600">University admins</span> open System administration
-          &amp; analytics. <span className="font-semibold text-slate-600">Supervisors (Lecturer)</span> open the
-          Student Performance Supervisor dashboard — same login; your role sets where you land.
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -140,14 +135,24 @@ function AdminLogin() {
 
           {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
 
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="w-full py-3 rounded-xl border border-indigo-200 bg-white text-indigo-700 font-semibold hover:border-indigo-300 hover:shadow-sm transition"
+            >
+              Demo Fill
+            </button>
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl
                  bg-gradient-to-r from-indigo-500 to-indigo-900
                  hover:scale-[1.02] transition font-semibold cursor-pointer text-white/90"
-          >
-            Login
-          </button>
+            >
+              Login
+            </button>
+          </div>
         </form>
 
         <p className="text-center text-sm text-slate-600 mt-6">
