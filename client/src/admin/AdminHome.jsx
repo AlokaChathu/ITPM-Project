@@ -49,11 +49,11 @@ function AdminHome() {
         {/* Profile Section (Matches Reference Image) */}
         <div className="p-6 flex items-center gap-4 border-b border-slate-700/50">
           <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
-            A
+            SPS
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm">System Admin</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Administrator</p>
+            <h3 className="text-white font-bold text-sm">Student Performance Supervisor</h3>
+        
           </div>
         </div>
 
