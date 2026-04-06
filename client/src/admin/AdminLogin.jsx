@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
+import { API_BASE } from "../config/api.js";
 import BgImg from "../assets/Background1.jpg";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-toastify";
 import NewLogo from "../assets/TalenTracerLogo2.png";
 
-import {
-  Mail,Lock
-} from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 
 function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -24,51 +23,63 @@ function AdminLogin() {
     setError("");
   };
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  try {
-    setIsLoading(true);
-    const res = await axios.post("http://localhost:4000/api/admin/login", {
-      email,
-      password,
-    }, {
-      withCredentials: true
-    });
-    setIsLoading(false);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      const res = await axios.post(`${API_BASE}/api/admin/login`, { email, password }, { withCredentials: true });
+      setIsLoading(false);
 
-    console.log('Login response:', res.data);
-
-    if (res.status === 200) {
-      // Redirect based on role
-      if (res.data.data.role === 'Lecturer') {
-        navigate("/admin/lecture-dashboard");
-      } else {
-        navigate("/admin/home");
+      if (res.status === 200) {
+        if (res.data.data.role === "Lecturer") {
+          navigate("/supervisor/dashboard");
+        } else if (res.data.data.email === 'bimalgunawardana3@gmail.com' || res.data.data.email === 'ravindusathruwan80@gmail.com') {
+          // Special analytics credentials go to AdminDashboard
+          navigate("/admin/system");
+        } else {
+          // Regular admins go to AdminHome (main branch behavior)
+          navigate("/admin/home");
+        }
       }
-    }
-  } catch (err) {
-    setIsLoading(false);
+    } catch (err) {
+      setIsLoading(false);
+      console.error("Login error:", err.response?.data || err.message);
 
-    console.error('Login error:', err.response?.data || err.message);
+      const status = err.response?.status;
+      const msg = err.response?.data?.message;
 
-    if (err.response && err.response.status === 401) {
+      if (!err.response) {
+        const hint =
+          err.code === "ERR_NETWORK"
+            ? "Cannot reach the API. From the project root run npm run dev (starts server + client), or cd server && npm run dev."
+            : err.message || "Network error";
+        setError(hint);
+        toast.error(hint);
+        return;
+      }
 
-      setError("Invalid credentials");
-      toast.error("Invalid credentials");
-      navigate("/admin/login");
-    } else {
+      if (status === 400 || status === 401) {
+        const text = msg || "Invalid email or password";
+        setError(text);
+        toast.error(text);
+        return;
+      }
+
+      if (msg) {
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+
       setError("Something went wrong. Please try again.");
       toast.error("Something went wrong. Please try again.");
     }
-  }
-};
-
+  };
 
   return isLoading ? (
     <LoadingSpinner />
   ) : (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
- 
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${BgImg})` }}
@@ -88,7 +99,7 @@ const handleLogin = async (e) => {
              shadow-[0_20px_50px_rgba(0,0,0,0.35)]
              text-slate-800 mt-20 mb-10"
       >
-<h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
+        <h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
           Admin Login
         </h2>
         <p className="text-center text-sm text-slate-600 mb-8">
@@ -96,7 +107,6 @@ const handleLogin = async (e) => {
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6">
-       
           <div className="relative">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -105,9 +115,8 @@ const handleLogin = async (e) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500
-                     bg-white text-slate-800 placeholder-slate-400 transition"
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-slate-800
+                     placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter your email"
               />
             </div>
@@ -121,15 +130,14 @@ const handleLogin = async (e) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500
-                     bg-white text-slate-800 placeholder-slate-400 transition"
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-slate-800
+                     placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter your password"
               />
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -140,29 +148,30 @@ const handleLogin = async (e) => {
               Demo Fill
             </button>
 
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl
                  bg-gradient-to-r from-indigo-500 to-indigo-900
                  hover:scale-[1.02] transition font-semibold cursor-pointer text-white/90"
-          >
-            Login
-          </button>
+            >
+              Login
+            </button>
           </div>
         </form>
 
-        <p className="text-center text-sm text-slate-600 mt-6">
+        <p className="mt-6 text-center text-sm text-slate-600">
           Staff member?{" "}
           <span
             onClick={() => navigate("/admin/login")}
-            className="text-indigo-700 underline cursor-pointer"
+            className="cursor-pointer text-indigo-700 underline"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && navigate("/admin/login")}
           >
             Login here
           </span>
         </p>
       </div>
-
-
     </div>
   );
 }
