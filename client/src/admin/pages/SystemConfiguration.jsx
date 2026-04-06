@@ -104,17 +104,6 @@ const SystemConfiguration = () => {
     }
   };
 
-  const fillSample = () => {
-    setForm({
-      minGpaRequirement: "3.0",
-      internshipDurationMonths: "6",
-      evalWeightTechnical: "40",
-      evalWeightCommunication: "35",
-      evalWeightAttendance: "25",
-    });
-    setErrors({});
-  };
-
   const canSubmit = useMemo(() => {
     const gpa = Number(form.minGpaRequirement);
     const months = Number(form.internshipDurationMonths);
@@ -132,15 +121,8 @@ const SystemConfiguration = () => {
     <section>
       <h2 className="text-xl font-bold tracking-tight text-slate-900">System configuration</h2>
       <div className="mt-4 rounded-xl border border-slate-200 p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3">
           <h3 className="text-lg font-semibold text-slate-800">Academic &amp; evaluation settings</h3>
-          <button
-            type="button"
-            onClick={fillSample}
-            className="rounded-md bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-          >
-            Fill sample data
-          </button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
