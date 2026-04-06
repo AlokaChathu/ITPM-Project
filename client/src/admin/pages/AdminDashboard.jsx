@@ -1,5 +1,4 @@
 import React from "react";
-import { toast } from "react-toastify";
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,38 +12,17 @@ import {
 } from "recharts";
 import { useAdmin } from "../../context/useAdmin";
 import SummaryCard from "../../components/admin/SummaryCard";
-import { adminService } from "../../services/adminService";
 
 const AdminDashboard = () => {
-  const { dashboardData, loading, fetchDashboard, fetchUsers } = useAdmin();
+  const { dashboardData, loading } = useAdmin();
   const { summary, recentActivities, chartData, placementTrend = [] } = dashboardData;
   const placementRate = summary.placementRate ?? 0;
-
-  const loadSampleData = async () => {
-    try {
-      const [u, i] = await Promise.all([adminService.seedDemoUsers(), adminService.seedInternships()]);
-      const msg = [u?.message, i?.message].filter(Boolean).join(" · ");
-      toast.success(msg || "Sample data refreshed");
-      await Promise.all([fetchDashboard(), fetchUsers()]);
-    } catch (e) {
-      toast.error(e.response?.data?.message || "Could not load sample data");
-    }
-  };
 
   return (
     <section>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold tracking-tight text-slate-900">Admin dashboard</h2>
-        <div className="flex flex-wrap items-center gap-2">
-          {loading && <p className="text-sm font-medium text-slate-500">Loading data…</p>}
-          <button
-            type="button"
-            onClick={loadSampleData}
-            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
-          >
-            Load sample data
-          </button>
-        </div>
+        {loading && <p className="text-sm font-medium text-slate-500">Loading data…</p>}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

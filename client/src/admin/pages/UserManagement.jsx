@@ -90,16 +90,6 @@ const UserManagement = () => {
     }
   };
 
-  const loadDemoUsers = async () => {
-    try {
-      const response = await adminService.seedDemoUsers();
-      toast.success(response.message || "Demo users loaded");
-      fetchUsers();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load demo users");
-    }
-  };
-
   const openEdit = (user) => {
     setEditUser(user);
     setEditForm({ name: user.name, email: user.email });
@@ -125,41 +115,15 @@ const UserManagement = () => {
     }
   };
 
-  const prefillSample = () => {
-    setFormData({
-      name: "Sample Company User",
-      email: `company${Date.now()}@usims.com`,
-      role: "Company",
-      password: "sample12",
-    });
-    setErrors({});
-  };
-
   const activeUsers = useMemo(() => users.filter((u) => !u.isDeleted), [users]);
 
   return (
     <section>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">User management</h2>
-        <button
-          type="button"
-          onClick={loadDemoUsers}
-          className="w-fit rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-100"
-        >
-          Load demo users
-        </button>
-      </div>
+      <h2 className="text-xl font-bold tracking-tight text-slate-900">User management</h2>
 
       <form onSubmit={handleAddUser} className="mt-4 rounded-xl border border-slate-200 p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3">
           <h3 className="text-lg font-semibold text-slate-800">Add new user</h3>
-          <button
-            type="button"
-            onClick={prefillSample}
-            className="rounded-md bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-          >
-            Fill sample data
-          </button>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
@@ -245,17 +209,6 @@ const UserManagement = () => {
                     >
                       Edit
                     </button>
-                    {user.role === "Company" && (
-                      <button
-                        type="button"
-                        className="rounded bg-green-600 px-2 py-1 text-xs font-semibold text-white hover:bg-green-700"
-                        onClick={() =>
-                          handleStatusAction(user._id, { action: "approveCompany" }, "Company approved")
-                        }
-                      >
-                        Approve company
-                      </button>
-                    )}
                     <button
                       type="button"
                       className="rounded bg-blue-600 px-2 py-1 text-xs font-semibold text-white hover:bg-blue-700"

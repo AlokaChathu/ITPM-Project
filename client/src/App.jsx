@@ -50,6 +50,8 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
         <Route path="/admin/home" element={<AdminHome />} />
+        {/* Student Performance Supervisor — separate from /admin/system (university admin) */}
+        <Route path="/supervisor/dashboard" element={<LectureDashboard />} />
         <Route path="/admin/lecture-dashboard" element={<LectureDashboard />} />
         <Route path="/readiness" element={<StudentReadiness />} />
         <Route path="/admin/jobs" element={<AdminJobs />} />

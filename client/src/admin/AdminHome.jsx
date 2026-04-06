@@ -11,7 +11,7 @@ import {
   Search,
   Bell,
   Settings,
-  BarChart3,
+  GraduationCap,
 } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { API_BASE } from "../config/api.js";
@@ -96,11 +96,12 @@ function AdminHome() {
           </button>
 
           <button
-            onClick={() => navigate("/admin/system")}
+            type="button"
+            onClick={() => navigate("/supervisor/dashboard")}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
           >
-            <BarChart3 size={18} />
-            Admin &amp; Analytics Panel
+            <GraduationCap size={18} />
+            Student performance supervisor
           </button>
         </nav>
 
