@@ -32,10 +32,6 @@ export const adminService = {
     const { data } = await axios.delete(`${apiUrl}/users/${userId}`);
     return data;
   },
-  seedDemoUsers: async () => {
-    const { data } = await axios.post(`${apiUrl}/users/seed`);
-    return data;
-  },
   getRoles: async () => {
     const { data } = await axios.get(`${apiUrl}/roles`);
     return data;
@@ -78,10 +74,6 @@ export const adminService = {
   },
   patchInternshipStatus: async (id, status) => {
     const { data } = await axios.patch(`${apiUrl}/internships/${id}`, { status });
-    return data;
-  },
-  seedInternships: async () => {
-    const { data } = await axios.post(`${apiUrl}/internships/seed`);
     return data;
   },
   getAnalytics: async () => {

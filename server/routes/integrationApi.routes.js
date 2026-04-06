@@ -8,13 +8,11 @@ import {
   getAdminUsers,
   getRoles,
   patchAdminUser,
-  seedDemoUsers,
   upsertAdminConfig,
 } from "../controllers/adminModule.controller.js";
 import {
   getInternshipSubmissions,
   updateInternshipStatus,
-  seedInternshipSamples,
 } from "../controllers/internshipAdmin.controller.js";
 import {
   getStudentReportCsv,
@@ -31,7 +29,6 @@ router.get("/dashboard", getAdminDashboard);
 
 router.get("/users", getAdminUsers);
 router.post("/users", addAdminUser);
-router.post("/users/seed", seedDemoUsers);
 router.patch("/users/:id", patchAdminUser);
 router.delete("/users/:id", deleteAdminUser);
 
@@ -42,7 +39,6 @@ router.get("/config", getAdminConfig);
 router.post("/config", upsertAdminConfig);
 
 router.get("/internships", getInternshipSubmissions);
-router.post("/internships/seed", seedInternshipSamples);
 router.patch("/internships/:id", updateInternshipStatus);
 
 router.get("/analytics", getAdminAnalytics);

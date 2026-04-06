@@ -42,7 +42,7 @@ const AdminLayout = () => {
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200/60 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-md md:px-5">
               <div>
                 <h1 className="text-xl font-bold tracking-tight text-indigo-950 md:text-2xl">
-                  Admin &amp; Analytics Panel
+                  System administration &amp; analytics
                 </h1>
                 <p className="mt-0.5 text-xs font-medium text-slate-600 md:text-sm">
                   University Student Internship Management System

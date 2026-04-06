@@ -18,12 +18,6 @@ function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fillDemo = () => {
-    setEmail("admin2@gmail.com");
-    setPassword("admin123");
-    setError("");
-  };
-
 const handleLogin = async (e) => {
   e.preventDefault();
   try {
@@ -39,11 +33,10 @@ const handleLogin = async (e) => {
     console.log('Login response:', res.data);
 
     if (res.status === 200) {
-      // Redirect based on role
-      if (res.data.data.role === 'Lecturer') {
-        navigate("/admin/lecture-dashboard");
+      if (res.data.data.role === "Lecturer") {
+        navigate("/supervisor/dashboard");
       } else {
-        navigate("/admin/home");
+        navigate("/admin/system");
       }
     }
   } catch (err) {
@@ -91,8 +84,13 @@ const handleLogin = async (e) => {
 <h2 className="text-3xl text-slate-900 font-bold text-center mb-2">
           Admin Login
         </h2>
-        <p className="text-center text-sm text-slate-600 mb-8">
+        <p className="text-center text-sm text-slate-600 mb-2">
           Enter your credentials to continue
+        </p>
+        <p className="mb-8 text-center text-xs leading-relaxed text-slate-500">
+          <span className="font-semibold text-slate-600">University admins</span> open System administration
+          &amp; analytics. <span className="font-semibold text-slate-600">Supervisors (Lecturer)</span> open the
+          Student Performance Supervisor dashboard — same login; your role sets where you land.
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -131,15 +129,6 @@ const handleLogin = async (e) => {
 
           {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
 
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={fillDemo}
-              className="w-full py-3 rounded-xl border border-indigo-200 bg-white text-indigo-700 font-semibold hover:border-indigo-300 hover:shadow-sm transition"
-            >
-              Demo Fill
-            </button>
-
           <button
             type="submit"
             className="w-full py-3 rounded-xl
@@ -148,7 +137,6 @@ const handleLogin = async (e) => {
           >
             Login
           </button>
-          </div>
         </form>
 
         <p className="text-center text-sm text-slate-600 mt-6">

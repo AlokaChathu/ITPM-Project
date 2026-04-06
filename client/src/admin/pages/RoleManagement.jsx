@@ -30,28 +30,13 @@ const RoleManagement = () => {
     }
   };
 
-  const fillSample = () => {
-    if (users.length > 0) {
-      setSelectedUser(users[0]._id);
-      setSelectedRole("Supervisor");
-      setError("");
-    }
-  };
-
   return (
     <section>
       <h2 className="text-xl font-bold tracking-tight text-slate-900">Role management</h2>
 
       <div className="mt-4 rounded-xl border border-slate-200 p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3">
           <h3 className="text-lg font-semibold text-slate-800">Assign role to user</h3>
-          <button
-            type="button"
-            onClick={fillSample}
-            className="rounded-md bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-          >
-            Fill sample data
-          </button>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div>

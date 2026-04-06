@@ -203,11 +203,6 @@ export const patchAdminUser = async (req, res) => {
       user.isDeleted = true;
       user.status = "Suspended";
     }
-    if (action === "approveCompany") {
-      user.companyApproved = true;
-      user.status = "Active";
-      user.role = "Company";
-    }
     // @validation — status must be one of enum values when provided
     if (status && ["Active", "Suspended", "Pending"].includes(status)) {
       user.status = status;
@@ -253,70 +248,6 @@ export const deleteAdminUser = async (req, res) => {
     return res.status(200).json({ success: true, message: "User removed", data: sanitizeUser(user) });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to delete user" });
-  }
-};
-
-export const seedDemoUsers = async (req, res) => {
-  try {
-    const active = await userModel.countDocuments({ isDeleted: false });
-    if (active >= 5) {
-      return res.status(200).json({
-        success: true,
-        message: "Enough users already exist for demo",
-        data: { inserted: 0, skipped: true },
-      });
-    }
-    const ts = Date.now();
-    const samples = [
-      {
-        name: "Demo Student Alpha",
-        email: `demo.student.alpha.${ts}@usims.edu`,
-        role: "Student",
-        password: "demo1234",
-      },
-      {
-        name: "Demo Supervisor",
-        email: `demo.supervisor.${ts}@usims.edu`,
-        role: "Supervisor",
-        password: "demo1234",
-      },
-      {
-        name: "Demo Company Ltd",
-        email: `demo.company.${ts}@usims.com`,
-        role: "Company",
-        password: "demo1234",
-      },
-    ];
-    let inserted = 0;
-    for (const s of samples) {
-      const norm = s.email.toLowerCase();
-      const exists = await userModel.findOne({ email: norm });
-      if (exists) continue;
-      const hashed = await bcrypt.hash(s.password, 10);
-      await userModel.create({
-        name: s.name,
-        email: norm,
-        role: s.role,
-        password: hashed,
-        status: s.role === "Company" ? "Pending" : "Active",
-        age: "22",
-        phone: "0000000000",
-        address: "Demo",
-      });
-      inserted += 1;
-    }
-    await AuditLogModel.create({
-      action: "SEED_DEMO_USERS",
-      target: `+${inserted} users`,
-      actor: req.adminId,
-    });
-    res.status(201).json({
-      success: true,
-      message: "Demo users loaded",
-      data: { inserted },
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to seed demo users" });
   }
 };
 

@@ -111,31 +111,6 @@ function Login() {
     setTouchedFields(prev => ({ ...prev, [field]: true }));
   };
 
-  const fillLoginDemo = () => {
-    setState("Login");
-    setEmail("student1@gmail.com");
-    setPassword("student123");
-    setTouchedFields({ email: true, password: true });
-  };
-
-  const fillSignupDemo = () => {
-    setState("Sign Up");
-    setName("Demo Candidate");
-    setEmail("demo.signup@talenttracer.com");
-    setPassword("Demo@123");
-    setAge("25");
-    setPhone("1234567890");
-    setAddress("123 Demo Street, City");
-    setTouchedFields({
-      name: true,
-      email: true,
-      password: true,
-      age: true,
-      phone: true,
-      address: true,
-    });
-  };
-
   const validateForm = () => {
     if (state === "Sign Up") {
       const fields = ['name', 'email', 'password', 'age', 'phone', 'address'];
@@ -369,23 +344,6 @@ function Login() {
               </div>
             </>
           )}
-
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <button
-              type="button"
-              onClick={fillLoginDemo}
-              className="w-full rounded-lg border border-indigo-200 bg-white/70 text-indigo-700 font-semibold py-2.5 shadow-sm hover:border-indigo-300 hover:bg-white transition"
-            >
-              Demo Sign In
-            </button>
-            <button
-              type="button"
-              onClick={fillSignupDemo}
-              className="w-full rounded-lg border border-emerald-200 bg-white/70 text-emerald-700 font-semibold py-2.5 shadow-sm hover:border-emerald-300 hover:bg-white transition"
-            >
-              Demo Sign Up
-            </button>
-          </div>
 
           {state === "Login" && (
             <p
