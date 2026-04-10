@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  ClipboardCheck, 
-  Briefcase, 
-  Users, 
-  LogOut, 
-  Search, 
-  Bell, 
-  Settings 
-} from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
+import {
+  LayoutDashboard,
+  ClipboardCheck,
+  Briefcase,
+  Users,
+  LogOut,
+  Search,
+  Bell,
+  Settings,
+} from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { API_BASE } from "../config/api.js";
 
 function AdminHome() {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +26,7 @@ function AdminHome() {
     try {
       setIsLoading(true);
       axios.defaults.withCredentials = true;
-      await axios.get(`http://localhost:4000/api/admin/logout`);
+      await axios.get(`${API_BASE}/api/admin/logout`);
       navigate("/admin/login");
       toast.success("Logout Successful");
     } catch (error) {
@@ -47,11 +48,11 @@ function AdminHome() {
         {/* Profile Section (Matches Reference Image) */}
         <div className="p-6 flex items-center gap-4 border-b border-slate-700/50">
           <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
-            A
+            SPS
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm">System Admin</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Administrator</p>
+            <h3 className="text-white font-bold text-sm">Student Performance Supervisor</h3>
+        
           </div>
         </div>
 
@@ -85,8 +86,8 @@ function AdminHome() {
             Manage Internships
           </button>
 
-          <button 
-            onClick={() => navigate('/admin/students')} 
+          <button
+            onClick={() => navigate("/admin/students")}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
           >
             <Users size={18} />
