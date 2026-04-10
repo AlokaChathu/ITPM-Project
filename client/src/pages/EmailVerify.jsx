@@ -50,7 +50,7 @@ function EmailVerify() {
             } else {
                 toast.error(data.message);
             }
-        } catch (error) {
+        } catch (_err) {
             toast.error("Something went wrong!");
         }
     };
