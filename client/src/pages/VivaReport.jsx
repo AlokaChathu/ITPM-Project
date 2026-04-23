@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { Calendar, Clock, MapPin, FileText, Upload, Trash2, Download, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StudentNavigation from '../components/StudentNavigation';
+import StudentBg from '../assets/Student BG.jpg';
 
 function VivaReport() {
   const { userData } = useContext(AppContent);
@@ -192,13 +193,27 @@ function VivaReport() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 font-sans selection:bg-purple-100 selection:text-purple-900 text-slate-900">
+    <div className="relative min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 font-sans selection:bg-purple-100 selection:text-purple-900 text-slate-900">
       
-      {/* Navigation */}
-      <StudentNavigation />
+      {/* Background Image with Blur and Transparency */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${StudentBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(1px)',
+          opacity: '0.6',
+          zIndex: 0
+        }}
+      ></div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-12 space-y-8">
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Navigation */}
+        <StudentNavigation />
+
+        {/* Main Content */}
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-12 space-y-8">
         
         {/* Viva Schedule Section */}
         {vivaSchedule ? (
@@ -425,6 +440,7 @@ function VivaReport() {
         </div>
 
       </main>
+      </div>
     </div>
   );
 }

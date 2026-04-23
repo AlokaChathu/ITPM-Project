@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StudentNavigation from '../components/StudentNavigation';
+import StudentBg from '../assets/Student BG.jpg';
 
 function StudentJobs() {
   const { userData } = useContext(AppContent);
@@ -120,60 +121,75 @@ function StudentJobs() {
   if (!userData || isLoading) return <div className='min-h-screen flex justify-center items-center bg-slate-50'>Page is Loading...</div>;
 
   return (
-    <div className='min-h-screen bg-slate-50'>
-      <StudentNavigation />
-      <div className='max-w-[1050px] mx-auto px-6 py-12'>
-        <button 
-          onClick={() => navigate('/customer-home')}
-          className='mb-6 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-2 transition'
-        >
-          ← Back to Dashboard
-        </button>
+    <div className="relative min-h-screen">
+      {/* Background Image with Blur and Transparency */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${StudentBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(1px)',
+          opacity: '0.6',
+          zIndex: 0
+        }}
+      ></div>
 
-        <div className="flex justify-between items-end mb-8">
-          <div>
-            <h1 className='text-3xl font-bold text-slate-800'>Internship Job Board</h1>
-            <p className='text-slate-600 mt-2'>Browse and apply for active internship opportunities.</p>
-          </div>
-        </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <StudentNavigation />
+        <div className="flex-1 max-w-[1050px] mx-auto px-6 py-12">
+          <button 
+            onClick={() => navigate('/customer-home')}
+            className='mb-6 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-2 transition'
+          >
+            ← Back to Dashboard
+          </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map(job => {
-            const status = getApplicationStatus(job._id);
-            return (
-              <div key={job._id} className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-indigo-400 flex flex-col hover:-translate-y-1 transition-transform relative">
-                {status && (
-                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusBadge(status)}`}>
-                    {status}
-                  </div>
-                )}
-                <div className="flex-grow">
-                  <h3 className="text-xl font-bold text-slate-800">{job.title}</h3>
-                  <p className="text-indigo-600 font-semibold mb-3">{job.company}</p>
-                  <p className="text-slate-500 text-sm mb-4 line-clamp-3">{job.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {job.techStack.map((tech, i) => (
-                      <span key={i} className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs px-2 py-1 rounded font-medium">{tech}</span>
-                    ))}
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => !status && handleApply(job._id)}
-                  disabled={!!status}
-                  className={`w-full py-2.5 rounded-lg font-bold transition shadow-md ${getButtonStyle(status)}`}
-                >
-                  {getButtonText(status)}
-                </button>
-              </div>
-            );
-          })}
-          {jobs.length === 0 && (
-            <div className="col-span-full bg-white p-10 rounded-2xl shadow-sm text-center">
-              <p className="text-xl text-slate-500">No internships available at the moment. Check back later!</p>
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <h1 className='text-3xl font-bold text-slate-800'>Internship Job Board</h1>
+              <p className='text-slate-600 mt-2'>Browse and apply for active internship opportunities.</p>
             </div>
-          )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {jobs.map(job => {
+              const status = getApplicationStatus(job._id);
+              return (
+                <div key={job._id} className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-indigo-400 flex flex-col hover:-translate-y-1 transition-transform relative">
+                  {status && (
+                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusBadge(status)}`}>
+                      {status}
+                    </div>
+                  )}
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-bold text-slate-800">{job.title}</h3>
+                    <p className="text-indigo-600 font-semibold mb-3">{job.company}</p>
+                    <p className="text-slate-500 text-sm mb-4 line-clamp-3">{job.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {job.techStack.map((tech, i) => (
+                        <span key={i} className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs px-2 py-1 rounded font-medium">{tech}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => !status && handleApply(job._id)}
+                    disabled={!!status}
+                    className={`w-full py-2.5 rounded-lg font-bold transition shadow-md ${getButtonStyle(status)}`}
+                  >
+                    {getButtonText(status)}
+                  </button>
+                </div>
+              );
+            })}
+            {jobs.length === 0 && (
+              <div className="col-span-full bg-white p-10 rounded-2xl shadow-sm text-center">
+                <p className="text-xl text-slate-500">No internships available at the moment. Check back later!</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

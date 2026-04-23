@@ -80,32 +80,32 @@ const MyProfile = () => {
       <Navbar2 />
       
       <div className="mx-auto w-full max-w-4xl px-4 py-10">
-        
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-              My Profile
-            </h1>
-            <p className="mt-2 text-slate-600">
-              Update your personal information and manage your account.
-            </p>
-          </div>
-          <button 
-            onClick={() => navigate('/customer-home')}
-            className="text-indigo-600 font-semibold hover:text-indigo-800 transition"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-
-        {/* Profile Card */}
-        <div className="rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden relative">
           
-          {/* Accent Banner */}
-          <div className="h-32 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                My Profile
+              </h1>
+              <p className="mt-2 text-slate-600">
+                Update your personal information and manage your account.
+              </p>
+            </div>
+            <button 
+              onClick={() => navigate('/customer-home')}
+              className="text-indigo-600 font-semibold hover:text-indigo-800 transition"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
 
-          <div className="px-6 sm:px-10 pb-10 relative">
+          {/* Profile Card */}
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden relative">
+            
+            {/* Accent Banner */}
+            <div className="h-32 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+
+            <div className="px-6 sm:px-10 pb-10 relative">
             
             {/* Avatar Float */}
             <div className="w-24 h-24 rounded-2xl bg-white p-1.5 absolute -top-12 shadow-lg border border-slate-100">
@@ -220,7 +220,6 @@ const MyProfile = () => {
             </form>
           </div>
         </div>
-        
       </div>
     </div>
   );
