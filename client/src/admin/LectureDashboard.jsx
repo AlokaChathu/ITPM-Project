@@ -113,118 +113,76 @@ function LectureDashboard() {
   };
 
   const fetchDashboardData = async () => {
-    // Mock data - replace with actual API calls
-    setStudents([
-      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', status: 'Internship Completed', reportMark: 85, companyRating: 4.5, vivaScore: 88, finalScore: 87.3, finalGrade: 'A' },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '098-765-4321', status: 'Internship Completed', reportMark: 92, companyRating: 4.8, vivaScore: 90, finalScore: 90.8, finalGrade: 'A+' },
-      { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '555-123-4567', status: 'Internship Completed', reportMark: null, companyRating: 4.2, vivaScore: null, finalScore: null, finalGrade: null },
-      { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '777-888-9999', status: 'In Progress', reportMark: null, companyRating: null, vivaScore: null, finalScore: null, finalGrade: null },
-      { id: 5, name: 'Tom Brown', email: 'tom@example.com', phone: '333-444-5555', status: 'Graded', reportMark: 78, companyRating: 4.0, vivaScore: 82, finalScore: 80.0, finalGrade: 'B' },
-      { id: 6, name: 'Emily Davis', email: 'emily@example.com', phone: '666-777-8888', status: 'Graded', reportMark: 95, companyRating: 4.9, vivaScore: 93, finalScore: 94.2, finalGrade: 'A+' }
-    ]);
-    
-    setVivaSchedules([
-      { 
-        id: 1, 
-        studentId: 1, 
-        studentName: 'John Doe', 
-        date: '2025-04-05', 
-        time: '10:00 AM', 
-        venue: 'Room 101, Main Building',
-        notes: 'Bring project documentation',
-        status: 'Scheduled' 
-      },
-      { 
-        id: 2, 
-        studentId: 2, 
-        studentName: 'Jane Smith', 
-        date: '2025-04-06', 
-        time: '2:00 PM', 
-        venue: 'Conference Hall A',
-        notes: 'Final presentation',
-        status: 'Completed' 
+    try {
+      // Fetch all users from existing endpoint
+      const { data } = await axios.get(`${API_BASE}/api/admin/users`, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (data.success && data.data) {
+        // Filter for students only
+        const students = data.data.filter(user => user.role === 'Student');
+        setStudents(students);
       }
-    ]);
-    
-    setInternshipReports([
-      { 
-        id: 1, 
-        studentId: 1, 
-        studentName: 'John Doe', 
-        studentEmail: 'john@example.com',
-        internshipTitle: 'Web Development Internship', 
-        company: 'Tech Corp',
-        submittedDate: '2025-04-01', 
-        status: 'Pending Review',
-        reportContent: 'During my internship at Tech Corp, I worked on developing responsive web applications using React and Node.js. I contributed to three major projects and learned about agile development methodologies. The experience helped me improve my technical skills and understand professional work environments.',
-        mark: null
-      },
-      { 
-        id: 2, 
-        studentId: 2, 
-        studentName: 'Jane Smith', 
-        studentEmail: 'jane@example.com',
-        internshipTitle: 'Mobile App Development', 
-        company: 'Digital Solutions',
-        submittedDate: '2025-04-02', 
-        status: 'Approved',
-        reportContent: 'My internship at Digital Solutions focused on mobile app development using React Native. I developed two mobile applications and participated in the complete software development lifecycle. I gained valuable experience in mobile UI/UX design and app deployment.',
-        mark: 85
-      },
-      { 
-        id: 3, 
-        studentId: 3, 
-        studentName: 'Mike Johnson', 
-        studentEmail: 'mike@example.com',
-        internshipTitle: 'Data Science Internship', 
-        company: 'Analytics Pro',
-        submittedDate: '2025-04-03', 
-        status: 'Pending Review',
-        reportContent: 'At Analytics Pro, I worked on machine learning projects and data analysis tasks. I developed predictive models and created data visualizations. This internship enhanced my skills in Python, TensorFlow, and statistical analysis.',
-        mark: null
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      // If error, set empty arrays
+      setStudents([]);
+    }
+
+    // Fetch company feedbacks
+    try {
+      const { data } = await axios.get('http://localhost:4000/api/feedback/all', {
+        withCredentials: true
+      });
+      
+      if (data.success && data.data) {
+        const formattedFeedbacks = data.data.map(feedback => ({
+          id: feedback._id,
+          studentName: feedback.studentId?.name || 'Unknown',
+          company: feedback.companyId?.name || 'Unknown Company',
+          rating: feedback.rating,
+          feedback: feedback.feedback,
+          date: new Date(feedback.createdAt).toLocaleDateString()
+        }));
+        setCompanyFeedbacks(formattedFeedbacks);
       }
-    ]);
-    
-    setCompanyFeedbacks([
-      { id: 1, studentId: 1, studentName: 'John Doe', company: 'Tech Corp', rating: 4.5, feedback: 'Excellent performance', date: '2025-04-01' },
-      { id: 2, studentId: 2, studentName: 'Jane Smith', company: 'Digital Solutions', rating: 4.8, feedback: 'Outstanding work', date: '2025-04-02' },
-      { id: 3, studentId: 5, studentName: 'Tom Brown', company: 'Innovation Labs', rating: 4.0, feedback: 'Good progress', date: '2025-04-03' },
-      { id: 4, studentId: 6, studentName: 'Emily Davis', company: 'Tech Solutions', rating: 4.9, feedback: 'Exceptional work', date: '2025-04-04' }
-    ]);
+    } catch (error) {
+      console.error('Error fetching company feedbacks:', error);
+      setCompanyFeedbacks([]);
+    }
 
-    // Chart data
-    setMonthlyData([
-      { month: 'Jan', submissions: 12, completed: 8, average: 75 },
-      { month: 'Feb', submissions: 15, completed: 12, average: 78 },
-      { month: 'Mar', submissions: 18, completed: 14, average: 82 },
-      { month: 'Apr', submissions: 22, completed: 16, average: 85 },
-      { month: 'May', submissions: 20, completed: 18, average: 88 },
-      { month: 'Jun', submissions: 25, completed: 20, average: 90 }
-    ]);
+    // Fetch viva schedules
+    try {
+      const { data } = await axios.get('http://localhost:4000/api/viva-schedule/all', {
+        withCredentials: true
+      });
+      
+      if (data.success && data.data) {
+        const formattedSchedules = data.data.map(schedule => ({
+          id: schedule._id,
+          studentId: schedule.studentId?._id,
+          studentName: schedule.studentName,
+          date: schedule.date,
+          time: schedule.time,
+          venue: schedule.venue,
+          notes: schedule.notes,
+          status: schedule.status
+        }));
+        setVivaSchedules(formattedSchedules);
+      }
+    } catch (error) {
+      console.error('Error fetching viva schedules:', error);
+      setVivaSchedules([]);
+    }
 
-    setGradeDistribution([
-      { grade: 'A+', count: 8, percentage: 25 },
-      { grade: 'A', count: 12, percentage: 38 },
-      { grade: 'B+', count: 6, percentage: 19 },
-      { grade: 'B', count: 4, percentage: 13 },
-      { grade: 'C+', count: 2, percentage: 5 }
-    ]);
-
-    setCompanyRatings([
-      { company: 'Tech Corp', rating: 4.5, students: 3 },
-      { company: 'Digital Solutions', rating: 4.8, students: 2 },
-      { company: 'Analytics Pro', rating: 4.2, students: 1 },
-      { company: 'Innovation Labs', rating: 4.0, students: 2 },
-      { company: 'Tech Solutions', rating: 4.9, students: 1 }
-    ]);
-
-    setInternshipProgress([
-      { stage: 'Registration', count: 30, completed: 28 },
-      { stage: 'Internship', count: 25, completed: 20 },
-      { stage: 'Report', count: 20, completed: 15 },
-      { stage: 'Viva', count: 15, completed: 12 },
-      { stage: 'Grading', count: 12, completed: 8 }
-    ]);
+    // Keep other data empty
+    setInternshipReports([]);
+    setMonthlyData([]);
+    setGradeDistribution([]);
+    setCompanyRatings([]);
+    setInternshipProgress([]);
   };
 
   const logout = async () => {
@@ -249,13 +207,14 @@ function LectureDashboard() {
   const handleScheduleViva = (student) => {
     setSelectedStudent(student);
     setScheduleForm({
-      studentId: student.id,
+      studentId: student._id,
       date: '',
       time: '',
       venue: '',
       notes: '',
       status: 'Scheduled'
     });
+    setSelectedSchedule(null);
     setShowScheduleModal(true);
   };
 
@@ -284,7 +243,7 @@ function LectureDashboard() {
     setShowScheduleModal(true);
   };
 
-  const handleSaveSchedule = () => {
+  const handleSaveSchedule = async () => {
     // Form validation
     if (!scheduleForm.studentId) {
       toast.error('Please select a student');
@@ -332,58 +291,92 @@ function LectureDashboard() {
       return;
     }
 
-    const student = students.find(s => s.id === parseInt(scheduleForm.studentId));
+    const student = students.find(s => s._id === scheduleForm.studentId);
     
-    if (selectedSchedule) {
-      // Update existing schedule
-      setVivaSchedules(vivaSchedules.map(s => 
-        s.id === selectedSchedule.id 
-          ? {
-              ...s,
-              studentId: parseInt(scheduleForm.studentId),
-              studentName: student.name,
-              date: scheduleForm.date,
-              time: scheduleForm.time,
-              venue: scheduleForm.venue,
-              notes: scheduleForm.notes,
-              status: scheduleForm.status
-            }
-          : s
-      ));
-      toast.success('Viva schedule updated successfully');
-    } else {
-      // Create new schedule
-      const newSchedule = {
-        id: vivaSchedules.length + 1,
-        studentId: parseInt(scheduleForm.studentId),
-        studentName: student.name,
-        date: scheduleForm.date,
-        time: scheduleForm.time,
-        venue: scheduleForm.venue,
-        notes: scheduleForm.notes,
-        status: scheduleForm.status
-      };
-      setVivaSchedules([...vivaSchedules, newSchedule]);
-      toast.success('Viva scheduled successfully');
+    try {
+      if (selectedSchedule) {
+        // Update existing schedule
+        const { data } = await axios.put(`http://localhost:4000/api/viva-schedule/${selectedSchedule.id}`, {
+          studentId: scheduleForm.studentId,
+          studentName: student.name,
+          date: scheduleForm.date,
+          time: scheduleForm.time,
+          venue: scheduleForm.venue,
+          notes: scheduleForm.notes,
+          status: scheduleForm.status
+        }, { withCredentials: true });
+        
+        if (data.success) {
+          setVivaSchedules(vivaSchedules.map(s => 
+            s.id === selectedSchedule.id 
+              ? { ...s, ...data.data }
+              : s
+          ));
+          toast.success('Viva schedule updated successfully');
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        // Create new schedule
+        const { data } = await axios.post('http://localhost:4000/api/viva-schedule/create', {
+          studentId: scheduleForm.studentId,
+          studentName: student.name,
+          date: scheduleForm.date,
+          time: scheduleForm.time,
+          venue: scheduleForm.venue,
+          notes: scheduleForm.notes,
+          status: scheduleForm.status
+        }, { withCredentials: true });
+        
+        if (data.success) {
+          setVivaSchedules([...vivaSchedules, {
+            id: data.data._id,
+            studentId: data.data.studentId,
+            studentName: data.data.studentName,
+            date: data.data.date,
+            time: data.data.time,
+            venue: data.data.venue,
+            notes: data.data.notes,
+            status: data.data.status
+          }]);
+          toast.success('Viva scheduled successfully');
+        } else {
+          toast.error(data.message);
+        }
+      }
+      
+      // Reset form and close modal
+      setShowScheduleModal(false);
+      setSelectedSchedule(null);
+      setScheduleForm({
+        studentId: '',
+        date: '',
+        time: '',
+        venue: '',
+        notes: '',
+        status: 'Scheduled'
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to save viva schedule');
     }
-    
-    // Reset form and close modal
-    setShowScheduleModal(false);
-    setSelectedSchedule(null);
-    setScheduleForm({
-      studentId: '',
-      date: '',
-      time: '',
-      venue: '',
-      notes: '',
-      status: 'Scheduled'
-    });
   };
 
-  const handleDeleteSchedule = (scheduleId) => {
+  const handleDeleteSchedule = async (scheduleId) => {
     if (window.confirm('Are you sure you want to delete this viva schedule?')) {
-      setVivaSchedules(vivaSchedules.filter(s => s.id !== scheduleId));
-      toast.success('Viva schedule deleted successfully');
+      try {
+        const { data } = await axios.delete(`http://localhost:4000/api/viva-schedule/${scheduleId}`, {
+          withCredentials: true
+        });
+        
+        if (data.success) {
+          setVivaSchedules(vivaSchedules.filter(s => s.id !== scheduleId));
+          toast.success('Viva schedule deleted successfully');
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to delete viva schedule');
+      }
     }
   };
 
@@ -765,10 +758,6 @@ function LectureDashboard() {
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
               />
             </div>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
-              <Plus size={18} />
-              Add Student
-            </button>
           </div>
         </div>
         
@@ -786,8 +775,6 @@ function LectureDashboard() {
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Name</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Email</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Phone</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -805,26 +792,6 @@ function LectureDashboard() {
                   </td>
                   <td className="py-3 px-4 text-gray-600">{student.email}</td>
                   <td className="py-3 px-4 text-gray-600">{student.phone}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      student.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                      student.status === 'Internship Completed' ? 'bg-blue-100 text-blue-800' :
-                      student.status === 'Graded' ? 'bg-purple-100 text-purple-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {student.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors">
-                        <Edit size={16} />
-                      </button>
-                      <button className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -853,9 +820,9 @@ function LectureDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {students
             .filter(student => student.status === 'Internship Completed')
-            .filter(student => !vivaSchedules.some(schedule => schedule.studentId === student.id))
+            .filter(student => !vivaSchedules.some(schedule => schedule.studentId === student._id))
             .map((student) => (
-              <div key={student.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div key={student._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900">{student.name}</h4>
@@ -1166,7 +1133,7 @@ function LectureDashboard() {
                 <BookOpen className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Student Performance Supervisor</h1>
+                <h1 className="text-2xl font-bold text-white">Lecture Dashboard</h1>
                 <p className="text-xs font-medium text-purple-300/90">Viva scheduling, reports, company feedback &amp; final grading</p>
                 {lecturerData && (
                   <span className="mt-1 block text-sm text-purple-200">
@@ -1176,13 +1143,6 @@ function LectureDashboard() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => navigate("/admin/home")}
-                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
-              >
-                Coordinator hub
-              </button>
               <button
                 type="button"
                 onClick={logout}
@@ -1253,9 +1213,13 @@ function LectureDashboard() {
                 >
                   <option value="">Select a student</option>
                   {students
-                    .filter(student => student.status === 'Internship Completed')
+                    .filter(student => 
+                      companyFeedbacks.some(feedback => 
+                        feedback.studentName?.toLowerCase() === student.name?.toLowerCase()
+                      )
+                    )
                     .map((student) => (
-                      <option key={student.id} value={student.id}>
+                      <option key={student._id} value={student._id}>
                         {student.name} - {student.email}
                       </option>
                     ))}

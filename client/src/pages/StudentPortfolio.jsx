@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
-import Navbar2 from '../components/Navbar2';
+import StudentNavigation from '../components/StudentNavigation';
 
 function StudentPortfolio() {
   const { userData } = useContext(AppContent);
@@ -116,7 +116,7 @@ function StudentPortfolio() {
   return (
 
     <>
-      <Navbar2 />
+      <StudentNavigation />
       <div className='min-h-screen  p-8'>
         <div className='max-w-5xl mx-auto'>
           <button onClick={() => navigate('/customer-home')} className='mb-6 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-2 transition'>

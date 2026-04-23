@@ -3,20 +3,15 @@ import { AppContent } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import Logo from '../assets/TalenTracerLogo2.png'; // Make sure this path is correct!
 import { 
-  LayoutDashboard, 
-  ClipboardCheck, 
-  Briefcase, 
-  FolderOpen,
-  User, 
-  LogOut, 
-  Search, 
-  Bell, 
-  ShieldAlert,
-  Settings 
+  ArrowRight,
+  ClipboardCheck,
+  Briefcase,
+  FolderOpen
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import StudentNavigation from '../components/StudentNavigation';
+import Logo from '../assets/TalenTracerLogo2.png'; // Make sure this path is correct!
 
 function CustomerHome() {
   const { userData, setUserData, setIsLoggedin } = useContext(AppContent);
@@ -29,7 +24,7 @@ function CustomerHome() {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
-  // Logout Logic (Combined from Navbar2)
+  // Logout Logic
   const logout = async () => {
     const confirmed = window.confirm("Are you sure you want to logout?");
     if (!confirmed) return;
@@ -53,7 +48,7 @@ function CustomerHome() {
     }
   };
 
-  // Send Verification Logic (Combined from Navbar2)
+  // Send Verification Logic
   const sendVerificationOtp = async () => {
     try {
       axios.defaults.withCredentials = true;
@@ -71,232 +66,157 @@ function CustomerHome() {
 
   if (isLoggingOut || !userData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f4f7f6]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
         <LoadingSpinner />
-        <p className="text-slate-500 font-medium mt-4">Loading your workspace...</p>
+        <p className="text-slate-400 font-light mt-4 tracking-widest uppercase text-xs">Initializing Workspace</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#f4f7f6] font-sans overflow-hidden" id='section2'>
+    <div className="min-h-screen bg-[#fafafa] font-sans selection:bg-indigo-100 selection:text-indigo-900 text-slate-900">
       
-      {/* ================= LEFT SIDEBAR ================= */}
-      <aside className="w-64 bg-[#1e2330] text-slate-300 flex flex-col shadow-2xl z-20 flex-shrink-0">
-        
-        {/* Logo Section */}
-        <a href="/">
-          <div className="h-20 flex items-center justify-center border-b border-slate-700/50 px-4">
-          {/* Fallback text if logo fails to load, otherwise shows Logo */}
-          <img src={Logo} alt="TalentTracer" className="w-32 select-none filter brightness-0 invert opacity-90" />
-        </div>
-        </a>
-        
+      {/* ================= TOP NAVIGATION ================= */}
+      <StudentNavigation />
 
-        {/* Profile Section */}
-        <div className="p-6 flex items-center gap-4 border-b border-slate-700/50">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
-            {getInitials(userData.name)}
+      {/* ================= MAIN CONTENT ================= */}
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        
+        {/* Hero Header */}
+        <header className="mb-16">
+          <div className="inline-block px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-[0.2em] mb-4">
+            Workspace Overview
           </div>
-          <div className="overflow-hidden">
-            <h3 className="text-white font-bold text-sm truncate">{userData.name.split(' ')[0]}</h3>
-            <p className="text-xs text-slate-400 mt-0.5 truncate">Student Portal</p>
-          </div>
-        </div>
+          <h1 className="text-5xl md:text-6xl font-black text-slate-950 tracking-tight leading-[1.1] mb-6">
+            Welcome back, <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+              {userData.name.split(' ')[0]}
+            </span>
+          </h1>
+          <p className="text-xl text-slate-500 font-light max-w-2xl leading-relaxed">
+            Your journey to a professional career continues here. Track your progress, explore opportunities, and refine your portfolio.
+          </p>
+        </header>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
-          <p className="px-3 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Main Menu</p>
-
-          <button 
-            onClick={() => navigate('/customer-home')} 
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-500/15 text-indigo-400 border-l-4 border-indigo-500 font-medium transition-colors"
-          >
-            <LayoutDashboard size={18} />
-            Dashboard
-          </button>
-
-          <button 
-            onClick={() => navigate('/readiness')} 
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
-          >
-            <ClipboardCheck size={18} />
-            Readiness
-          </button>
-
-          <button 
-            onClick={() => navigate('/jobs')} 
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
-          >
-            <Briefcase size={18} />
-            Job Board
-          </button>
-
-          <button 
-            onClick={() => navigate('/portfolio')} 
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
-          >
-            <FolderOpen size={18} />
-            My Portfolio
-          </button>
-
-          <p className="px-3 text-xs font-bold text-slate-500 uppercase tracking-widest mt-6 mb-4">Account</p>
-
-          <button 
-            onClick={() => navigate('/my-profile')} 
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white font-medium transition-colors"
-          >
-            <User size={18} />
-            My Profile
-          </button>
-
-          {/* Verification Warning Link (Only shows if unverified) */}
-          {!userData.isAccountVerified && (
-            <button 
-              onClick={sendVerificationOtp} 
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 font-medium transition-colors mt-2"
-            >
-              <ShieldAlert size={18} />
-              Verify Email
-            </button>
-          )}
-        </nav>
-
-        {/* Logout Section */}
-        <div className="p-4 border-t border-slate-700/50">
-          <button 
-            onClick={logout} 
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-rose-500/10 text-rose-400 hover:text-rose-500 font-medium transition-colors"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* ================= RIGHT SIDE (MAIN CONTENT) ================= */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        
-        
-
-        {/* Scrollable Dashboard Area */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          <div className="max-w-6xl mx-auto">
-            
-            {/* Page Title */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                Welcome back, {userData.name.split(' ')[0]}! 👋
-              </h1>
-              <p className="text-slate-500 text-lg mt-1">Here is an overview of your internship journey.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Profile Card (Left) */}
+          <div className="lg:col-span-4">
+            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-500 opacity-50"></div>
               
-              {/* Left Column: ID Card */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden sticky top-0">
-                  <div className="h-24 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
-                  <div className="px-8 pb-8 relative">
-                    <div className="w-20 h-20 rounded-2xl bg-white p-1.5 absolute -top-10 shadow-md">
-                      <div className="w-full h-full bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center text-2xl font-bold">
-                        {getInitials(userData.name)}
-                      </div>
-                    </div>
-                    
-                    <div className="pt-14 border-b border-slate-100 pb-5 mb-5">
-                      <h2 className="text-2xl font-bold text-slate-900">{userData.name}</h2>
-                      <p className="text-slate-500 text-sm font-medium mt-1">{userData.email}</p>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <p className="text-slate-400 text-xs font-bold tracking-wider">AGE</p>
-                        <p className="font-semibold text-slate-800">{userData.age || 'N/A'}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-slate-400 text-xs font-bold tracking-wider">PHONE</p>
-                        <p className="font-semibold text-slate-800">{userData.phone || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400 text-xs font-bold tracking-wider mb-1">ADDRESS</p>
-                        <p className="font-semibold text-slate-800 text-sm">{userData.address || 'N/A'}</p>
-                      </div>
-                    </div>
+              <div className="relative">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center text-white text-2xl font-black shadow-xl mb-6">
+                  {getInitials(userData.name)}
+                </div>
+                
+                <h2 className="text-2xl font-bold text-slate-900 mb-1">{userData.name}</h2>
+                <p className="text-slate-400 text-sm font-medium mb-8">{userData.email}</p>
 
-                    <div className="mt-6 pt-5 border-t border-slate-100">
-                      <div className="flex justify-between items-center">
-                        <p className="text-slate-400 text-xs font-bold tracking-wider">STATUS</p>
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                          userData.isAccountVerified ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-                        }`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${userData.isAccountVerified ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                          {userData.isAccountVerified ? 'Verified' : 'Unverified'}
-                        </span>
-                      </div>
-                    </div>
+                <div className="space-y-6 pt-6 border-t border-slate-50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Age</span>
+                    <span className="text-sm font-bold text-slate-700">{userData.age || '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Phone</span>
+                    <span className="text-sm font-bold text-slate-700">{userData.phone || '—'}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Address</span>
+                    <span className="text-sm font-bold text-slate-700 leading-relaxed">{userData.address || '—'}</span>
+                  </div>
+                </div>
+
+                <div className="mt-10 pt-8 border-t border-slate-50 flex items-center justify-between">
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Account Status</span>
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    userData.isAccountVerified ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                  }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${userData.isAccountVerified ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                    {userData.isAccountVerified ? 'Verified' : 'Pending'}
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Right Column: Interactive Modules */}
-              <div className="lg:col-span-2 space-y-5">
-                
-                {/* Module 1: Readiness */}
-                <div 
-                  onClick={() => navigate('/readiness')}
-                  className="bg-white rounded-2xl p-6 sm:p-8 flex items-center gap-6 cursor-pointer shadow-sm border border-slate-200 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-1 transition-all group"
-                >
-                  <div className="bg-indigo-50 p-4 rounded-2xl text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0">
-                    <ClipboardCheck size={28} />
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Internship Readiness</h4>
-                    <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">
-                      Submit your CV, view academic feedback, and check your eligibility for the upcoming internship program.
-                    </p>
-                  </div>
+          {/* Action Modules (Right) */}
+          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Module: Readiness */}
+            <div 
+              onClick={() => navigate('/readiness')}
+              className="bg-white p-10 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.04)] hover:border-indigo-100 transition-all cursor-pointer group flex flex-col justify-between min-h-[320px]"
+            >
+              <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                <ClipboardCheck size={28} strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">Readiness Check</h3>
+                <p className="text-slate-500 font-light leading-relaxed mb-6">
+                  Complete your profile and academic standing to qualify for top-tier internship opportunities.
+                </p>
+                <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
+                  Get Started <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </div>
-
-                {/* Module 2: Job Board */}
-                <div 
-                  onClick={() => navigate('/jobs')}
-                  className="bg-white rounded-2xl p-6 sm:p-8 flex items-center gap-6 cursor-pointer shadow-sm border border-slate-200 hover:border-purple-300 hover:shadow-lg hover:-translate-y-1 transition-all group"
-                >
-                  <div className="bg-purple-50 p-4 rounded-2xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors shrink-0">
-                    <Briefcase size={28} />
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Internship Job Board</h4>
-                    <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">
-                      Browse active internship postings from top companies and apply instantly once you are eligible.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Module 3: Portfolio & Inbox */}
-                <div 
-                  onClick={() => navigate('/portfolio')}
-                  className="bg-white rounded-2xl p-6 sm:p-8 flex items-center gap-6 cursor-pointer shadow-sm border border-slate-200 hover:border-sky-300 hover:shadow-lg hover:-translate-y-1 transition-all group"
-                >
-                  <div className="bg-sky-50 p-4 rounded-2xl text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-colors shrink-0">
-                    <FolderOpen size={28} />
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-slate-900 group-hover:text-sky-600 transition-colors">My Portfolio & Inbox</h4>
-                    <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">
-                      Manage your skill tags to improve job matching and check direct messages from the admin team.
-                    </p>
-                  </div>
-                </div>
-
               </div>
             </div>
 
+            {/* Module: Job Board */}
+            <div 
+              onClick={() => navigate('/jobs')}
+              className="bg-slate-900 p-10 rounded-[2rem] shadow-2xl hover:shadow-indigo-200/50 hover:-translate-y-2 transition-all cursor-pointer group flex flex-col justify-between min-h-[320px]"
+            >
+              <div className="w-14 h-14 bg-white/10 text-white rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-all duration-500">
+                <Briefcase size={28} strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white mb-4 tracking-tight">Opportunity Hub</h3>
+                <p className="text-slate-400 font-light leading-relaxed mb-6">
+                  Explore curated listings from global tech companies. Find your perfect match and apply instantly.
+                </p>
+                <div className="flex items-center gap-2 text-white font-bold text-sm opacity-80 group-hover:opacity-100 transition-opacity">
+                  View Board <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Module: Portfolio */}
+            <div 
+              onClick={() => navigate('/portfolio')}
+              className="md:col-span-2 bg-white p-10 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.04)] hover:border-blue-100 transition-all cursor-pointer group flex items-center gap-10"
+            >
+              <div className="hidden sm:flex w-24 h-24 bg-blue-50 text-blue-600 rounded-[2rem] items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-700 shrink-0">
+                <FolderOpen size={40} strokeWidth={1.2} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Professional Identity</h3>
+                <p className="text-slate-500 font-light leading-relaxed max-w-xl">
+                  Showcase your projects and skills to recruiters. Manage your digital footprint and application history.
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 group-hover:border-blue-200 group-hover:text-blue-600 transition-all shrink-0">
+                <ArrowRight size={20} />
+              </div>
+            </div>
           </div>
         </div>
       </main>
+      
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-slate-100 mt-20">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-xs font-bold text-slate-300 uppercase tracking-[0.3em]">
+            &copy; {new Date().getFullYear()} TalentTracer Identity
+          </p>
+          <div className="flex gap-8">
+            <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Privacy</button>
+            <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Terms</button>
+            <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Support</button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
