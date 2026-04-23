@@ -7,6 +7,7 @@ import {
   Briefcase, 
   FolderOpen,
   Calendar,
+  Award,
   LogOut, 
   ShieldAlert
 } from 'lucide-react';
@@ -33,13 +34,15 @@ function StudentNavigation() {
         credentials: 'include'
       }).then(res => res.json());
 
-      if (data.success) {
-        setIsLoggedin(false);
-        setUserData(false);
-        navigate('/');
-      }
+      setIsLoggedin(false);
+      setUserData(null);
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
+      // Still logout on frontend even if backend fails
+      setIsLoggedin(false);
+      setUserData(null);
+      navigate('/');
     }
   };
 
@@ -77,6 +80,7 @@ function StudentNavigation() {
               { label: 'Job Board', path: '/jobs', icon: Briefcase },
               { label: 'Portfolio', path: '/portfolio', icon: FolderOpen },
               { label: 'Viva & Report', path: '/viva-report', icon: Calendar },
+              { label: 'Final Results', path: '/final-results', icon: Award },
             ].map((item) => (
               <button
                 key={item.label}

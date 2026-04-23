@@ -40,6 +40,8 @@ import StudentPortfolio from "./pages/StudentPortfolio";
 
 import VivaReport from "./pages/VivaReport";
 
+import FinalResults from "./pages/FinalResults";
+
 import AdminStudents from "./admin/AdminStudents";
 
 import CompanyDashboard from "./company/CompanyDashboard";
@@ -117,6 +119,8 @@ function App() {
         <Route path="/portfolio" element={<StudentPortfolio />} />
 
         <Route path="/viva-report" element={<VivaReport />} />
+
+        <Route path="/final-results" element={<FinalResults />} />
 
         <Route path="/admin/students" element={<AdminStudents />} />
 

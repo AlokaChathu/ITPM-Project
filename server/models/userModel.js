@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
 
       type: String,
 
-      enum: ["Active", "Suspended", "Pending"],
+      enum: ["Active", "Suspended", "Pending", "In Progress", "Graded"],
 
       default: "Active",
 
@@ -57,7 +57,14 @@ const userSchema = new mongoose.Schema(
 
     industry: { type: String, required: function() { return this.role === 'Company'; } },
 
-    registrationNumber: { type: String, required: function() { return this.role === 'Company'; } }
+    registrationNumber: { type: String, required: function() { return this.role === 'Company'; } },
+
+    // Grading fields for students
+    vivaScore: { type: Number, default: null },
+    reportMark: { type: Number, default: null },
+    companyRating: { type: Number, default: null },
+    finalScore: { type: Number, default: null },
+    finalGrade: { type: String, default: null }
 
   },
 

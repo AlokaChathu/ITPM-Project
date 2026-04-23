@@ -17,6 +17,7 @@ import portfolioRouter from "./routes/portfolioRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import feedbackRouter from "./routes/feedbackRoutes.js";
 import vivaScheduleRouter from "./routes/vivaScheduleRoutes.js";
+import reportRouter from "./routes/reportRoutes.js";
 import { mountIntegrationApi } from "./routes/integrationApi.routes.js";
 
 const app = express();
@@ -52,6 +53,7 @@ app.use("/api/portfolio", portfolioRouter);
 app.use("/api/messages", messageRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/api/viva-schedule", vivaScheduleRouter);
+app.use("/api/report", reportRouter);
 mountIntegrationApi(app);
 
 async function start() {

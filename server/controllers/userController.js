@@ -21,7 +21,13 @@ export const getUserData =async (req,res)=>{
                 age:user.age,
                 phone:user.phone,
                 address:user.address,
-                isAccountVerified: user.isAccountVerified
+                isAccountVerified: user.isAccountVerified,
+                vivaScore: user.vivaScore,
+                reportMark: user.reportMark,
+                companyRating: user.companyRating,
+                finalScore: user.finalScore,
+                finalGrade: user.finalGrade,
+                status: user.status
             }
         })
         
@@ -104,6 +110,34 @@ export const deleteUser = async (req, res) => {
     }
     res.json({ success: true, message: "User deleted" });
   } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+// UPDATE student grade
+export const updateStudentGrade = async (req, res) => {
+  const { id } = req.params;
+  const { vivaScore, reportMark, companyRating, finalScore, finalGrade } = req.body;
+
+  try {
+    const updatedData = {
+      vivaScore,
+      reportMark,
+      companyRating,
+      finalScore,
+      finalGrade,
+      status: 'Graded'
+    };
+
+    const user = await userModel.findByIdAndUpdate(id, updatedData, { new: true });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, message: "Grade updated successfully", data: user });
+  } catch (err) {
+    console.error("Error updating student grade:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
