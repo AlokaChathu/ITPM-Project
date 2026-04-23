@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StudentNavigation from '../components/StudentNavigation';
+import StudentBg from '../assets/Student BG.jpg';
 
 function FinalResults() {
   const { userData, setUserData, setIsLoggedin } = useContext(AppContent);
@@ -77,13 +78,27 @@ function FinalResults() {
   const isGraded = studentData?.finalGrade && studentData?.status === 'Graded';
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans selection:bg-indigo-100 selection:text-indigo-900 text-slate-900">
+    <div className="relative min-h-screen bg-[#fafafa] font-sans selection:bg-indigo-100 selection:text-indigo-900 text-slate-900">
       
-      {/* Navigation */}
-      <StudentNavigation />
+      {/* Background Image with Blur and Transparency */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${StudentBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(1px)',
+          opacity: '0.6',
+          zIndex: 0
+        }}
+      ></div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Navigation */}
+        <StudentNavigation />
+
+        {/* Main Content */}
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-12">
         
         {/* Header */}
         <header className="mb-12">
@@ -193,6 +208,7 @@ function FinalResults() {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 }
