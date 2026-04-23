@@ -5,7 +5,7 @@ import {
   LogOut, Users, BookOpen, Calendar, Award, 
   Clock, Edit, Trash2, Plus, Search, Filter,
   ChevronRight, CheckCircle, XCircle, AlertCircle,
-  FileText, Building, Star, TrendingUp
+  FileText, Building, Star, TrendingUp, Download
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { API_BASE } from '../config/api.js';
@@ -45,6 +45,8 @@ function LectureDashboard() {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedGradingStudent, setSelectedGradingStudent] = useState(null);
+  const [gradingTab, setGradingTab] = useState('to-be-graded');
+  const [studentStatusFilter, setStudentStatusFilter] = useState('All');
   
   // Chart data states
   const [monthlyData, setMonthlyData] = useState([]);
@@ -177,8 +179,34 @@ function LectureDashboard() {
       setVivaSchedules([]);
     }
 
+    // Fetch internship reports
+    try {
+      const { data } = await axios.get('http://localhost:4000/api/report/all', {
+        withCredentials: true
+      });
+      
+      if (data.success && data.data) {
+        const formattedReports = data.data.map(report => ({
+          id: report._id,
+          studentName: report.studentName,
+          studentEmail: report.studentEmail,
+          internshipTitle: report.internshipTitle,
+          company: report.company,
+          fileName: report.fileName,
+          fileSize: report.fileSize,
+          status: report.status,
+          mark: report.mark,
+          feedback: report.feedback,
+          submittedDate: new Date(report.submittedDate).toLocaleDateString()
+        }));
+        setInternshipReports(formattedReports);
+      }
+    } catch (error) {
+      console.error('Error fetching internship reports:', error);
+      setInternshipReports([]);
+    }
+
     // Keep other data empty
-    setInternshipReports([]);
     setMonthlyData([]);
     setGradeDistribution([]);
     setCompanyRatings([]);
@@ -480,15 +508,21 @@ function LectureDashboard() {
   };
 
   const handleAssignGrade = (student) => {
+    // Verify viva schedule is completed
+    const vivaSchedule = vivaSchedules.find(vs => vs.studentId === student._id);
+    if (!vivaSchedule || vivaSchedule.status !== 'Completed') {
+      toast.error('Student must have a completed viva schedule to be graded');
+      return;
+    }
+
     setSelectedGradingStudent(student);
     
-    // Auto-fill report mark and company rating
-    const report = internshipReports.find(r => r.studentId === student.id && r.mark !== null);
-    const feedback = companyFeedbacks.find(f => f.studentId === student.id);
+    // Auto-fill company rating only (convert 5-point to 100-point scale)
+    const feedback = companyFeedbacks.find(f => f.studentName?.toLowerCase() === student.name?.toLowerCase());
     
     setGradingForm({
       vivaScore: student.vivaScore || '',
-      reportMark: report ? report.mark : '',
+      reportMark: student.reportMark || '', // Manual entry, not auto-filled
       companyRating: feedback ? feedback.rating * 20 : '', // Convert 5-point to 100-point scale
       finalScore: student.finalScore || 0,
       finalGrade: student.finalGrade || ''
@@ -506,28 +540,28 @@ function LectureDashboard() {
   };
 
   const calculateGrade = (score) => {
-    if (score >= 95) return 'A+';
-    if (score >= 90) return 'A';
-    if (score >= 85) return 'B+';
-    if (score >= 80) return 'B';
-    if (score >= 75) return 'C+';
-    if (score >= 70) return 'C';
-    if (score >= 65) return 'D+';
-    if (score >= 60) return 'D';
+    if (score >= 85) return 'A+';
+    if (score >= 76) return 'A';
+    if (score >= 70) return 'A-';
+    if (score >= 65) return 'B+';
+    if (score >= 60) return 'B';
+    if (score >= 55) return 'B-';
+    if (score >= 50) return 'C+';
+    if (score >= 45) return 'C';
     return 'F';
   };
 
-  const handleSaveGrade = () => {
+  const handleSaveGrade = async () => {
     // Form validation
-    if (!gradingForm.vivaScore) {
+    if (!gradingForm.vivaScore || (typeof gradingForm.vivaScore === 'string' && gradingForm.vivaScore.trim() === '')) {
       toast.error('Please enter viva score');
       return;
     }
-    if (!gradingForm.reportMark) {
+    if (!gradingForm.reportMark || (typeof gradingForm.reportMark === 'string' && gradingForm.reportMark.trim() === '')) {
       toast.error('Please enter report score');
       return;
     }
-    if (!gradingForm.companyRating) {
+    if (!gradingForm.companyRating || (typeof gradingForm.companyRating === 'string' && gradingForm.companyRating.trim() === '')) {
       toast.error('Please enter company rating');
       return;
     }
@@ -546,6 +580,11 @@ function LectureDashboard() {
       toast.error('Viva score cannot exceed 100');
       return;
     }
+    // Check decimal places (max 1 decimal place)
+    if (gradingForm.vivaScore.toString().includes('.') && gradingForm.vivaScore.toString().split('.')[1]?.length > 1) {
+      toast.error('Viva score can have maximum 1 decimal place');
+      return;
+    }
 
     // Report score validation
     const reportMark = parseFloat(gradingForm.reportMark);
@@ -559,6 +598,11 @@ function LectureDashboard() {
     }
     if (reportMark > 100) {
       toast.error('Report score cannot exceed 100');
+      return;
+    }
+    // Check decimal places (max 1 decimal place)
+    if (gradingForm.reportMark.toString().includes('.') && gradingForm.reportMark.toString().split('.')[1]?.length > 1) {
+      toast.error('Report score can have maximum 1 decimal place');
       return;
     }
 
@@ -576,6 +620,11 @@ function LectureDashboard() {
       toast.error('Company rating cannot exceed 100');
       return;
     }
+    // Check decimal places (max 1 decimal place)
+    if (gradingForm.companyRating.toString().includes('.') && gradingForm.companyRating.toString().split('.')[1]?.length > 1) {
+      toast.error('Company rating can have maximum 1 decimal place');
+      return;
+    }
 
     // Additional validation: Check if all scores are reasonable
     if (vivaScore < 30) {
@@ -591,30 +640,67 @@ function LectureDashboard() {
     const finalScore = calculateFinalScore(vivaScore, reportMark, companyRating);
     const finalGrade = calculateGrade(finalScore);
 
-    // Update student with grading information
-    setStudents(students.map(student => 
-      student.id === selectedGradingStudent.id 
-        ? {
-            ...student,
-            vivaScore: vivaScore,
-            reportMark: reportMark,
-            companyRating: companyRating / 20, // Convert back to 5-point scale
-            finalScore: finalScore,
-            finalGrade: finalGrade,
-            status: 'Graded'
-          }
-        : student
-    ));
+    // Confirm before saving
+    const confirmSave = window.confirm(
+      `Save grade for ${selectedGradingStudent.name}?\n\n` +
+      `Viva Score: ${vivaScore}\n` +
+      `Report Score: ${reportMark}\n` +
+      `Company Rating: ${companyRating}\n\n` +
+      `Final Score: ${finalScore.toFixed(1)}%\n` +
+      `Final Grade: ${finalGrade}`
+    );
+    if (!confirmSave) return;
 
-    toast.success(`Grade assigned: ${finalGrade} (${finalScore.toFixed(1)}%)`);
-    setShowGradingModal(false);
-    setSelectedGradingStudent(null);
-    setGradingForm({ vivaScore: '', finalScore: 0, finalGrade: '' });
+    // Save to backend
+    try {
+      console.log('Saving grade for student:', selectedGradingStudent._id);
+      const { data } = await axios.put(`http://localhost:4000/api/user/update-grade/${selectedGradingStudent._id}`, {
+        vivaScore,
+        reportMark,
+        companyRating: companyRating / 20, // Convert back to 5-point scale
+        finalScore,
+        finalGrade
+      }, {
+        withCredentials: true
+      });
+
+      console.log('API response:', data);
+
+      if (data.success) {
+        // Update local state after successful API call
+        setStudents(students.map(student => 
+          student._id === selectedGradingStudent._id 
+            ? {
+                ...student,
+                vivaScore: vivaScore,
+                reportMark: reportMark,
+                companyRating: companyRating / 20,
+                finalScore: finalScore,
+                finalGrade: finalGrade,
+                status: 'Graded'
+              }
+            : student
+        ));
+
+        toast.success(`Grade assigned: ${finalGrade} (${finalScore.toFixed(1)}%)`);
+        setShowGradingModal(false);
+        setSelectedGradingStudent(null);
+        setGradingForm({ vivaScore: '', finalScore: 0, finalGrade: '' });
+      } else {
+        console.error('API returned failure:', data);
+        toast.error(data.message || 'Failed to save grade');
+      }
+    } catch (error) {
+      console.error('Error saving grade:', error);
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to save grade. Please try again.');
+    }
   };
 
   const renderOverview = () => {
     const COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#a855f7'];
     
+    // ...
     return (
       <div className="space-y-8">
         {/* Statistics Cards */}
@@ -734,20 +820,45 @@ function LectureDashboard() {
   };
 
   const renderStudents = () => {
-    // Filter students based on search term match
-    const filteredStudents = searchTerm 
-      ? students.filter(student => 
-          student.name.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
-          student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.phone.includes(searchTerm)
-        )
-      : students;
+    // Filter students based on search term match and status filter
+    let filteredStudents = students;
+    
+    // Apply status filter
+    if (studentStatusFilter !== 'All') {
+      filteredStudents = filteredStudents.filter(student => {
+        const status = student.status || 'In Progress';
+        if (studentStatusFilter === 'Graded') {
+          return status === 'Graded';
+        } else if (studentStatusFilter === 'In Progress') {
+          return status === 'In Progress';
+        }
+        return true;
+      });
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      filteredStudents = filteredStudents.filter(student => 
+        student.name.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (student.status || 'In Progress').toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Students</h2>
           <div className="flex items-center gap-3">
+            <select 
+              value={studentStatusFilter}
+              onChange={(e) => setStudentStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="All">All Status</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Graded">Graded</option>
+            </select>
             <div className="relative">
               <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -774,7 +885,7 @@ function LectureDashboard() {
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Name</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Email</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Phone</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -787,11 +898,21 @@ function LectureDashboard() {
                           {student.name.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
-                      <span className="font-medium text-gray-900">{student.name}</span>
+                      <div>
+                        <p className="font-medium text-gray-900">{student.name}</p>
+                      </div>
                     </div>
                   </td>
                   <td className="py-3 px-4 text-gray-600">{student.email}</td>
-                  <td className="py-3 px-4 text-gray-600">{student.phone}</td>
+                  <td className="py-3 px-4">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      student.status === 'Graded' 
+                        ? 'bg-purple-100 text-purple-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {student.status || 'In Progress'}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -827,9 +948,8 @@ function LectureDashboard() {
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900">{student.name}</h4>
                     <p className="text-sm text-gray-600">{student.email}</p>
-                    <p className="text-sm text-gray-600">{student.phone}</p>
                     <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                      {student.status}
+                      {student.status || 'In Progress'}
                     </span>
                   </div>
                   <button
@@ -963,6 +1083,9 @@ function LectureDashboard() {
                       <span className="font-medium">Company:</span> {report.company}
                     </p>
                     <p className="text-sm text-gray-600">
+                      <span className="font-medium">File:</span> {report.fileName} ({(report.fileSize / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                    <p className="text-sm text-gray-600">
                       <span className="font-medium">Submitted:</span> {report.submittedDate}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -991,6 +1114,16 @@ function LectureDashboard() {
                   }`}>
                     {report.status}
                   </span>
+                  
+                  {/* Download Button */}
+                  <button 
+                    onClick={() => window.open(`http://localhost:4000/api/report/download/${report.id}`, '_blank')}
+                    className="px-3 py-1 text-green-600 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
+                    title="Download Report"
+                  >
+                    <Download size={14} />
+                    Download
+                  </button>
                   
                   {/* Review Button */}
                   <button 
@@ -1037,14 +1170,6 @@ function LectureDashboard() {
                 <p className="text-gray-600 text-sm">{feedback.feedback}</p>
                 <p className="text-xs text-gray-500 mt-2">Date: {feedback.date}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                  <Edit size={16} />
-                </button>
-                <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                  <Trash2 size={16} />
-                </button>
-              </div>
             </div>
           </div>
         ))}
@@ -1053,29 +1178,70 @@ function LectureDashboard() {
   );
 
   const renderFinalGrading = () => {
-    // Filter students who completed internship
-    const completedStudents = students.filter(student => student.status === 'Internship Completed' || student.status === 'Graded');
+    // Filter students who have completed viva (regardless of internship status)
+    const completedStudents = students.filter(student => {
+      // Check if student has a completed viva schedule
+      const vivaSchedule = vivaSchedules.find(vs => vs.studentId === student._id);
+      return vivaSchedule && vivaSchedule.status === 'Completed';
+    });
+
+    // Split into graded and to-be-graded
+    const toBeGraded = completedStudents.filter(student => student.status !== 'Graded');
+    const graded = completedStudents.filter(student => student.status === 'Graded');
+
+    const studentsToShow = gradingTab === 'to-be-graded' ? toBeGraded : graded;
     
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Final Grading</h2>
+          
+          {/* Tab Switcher */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setGradingTab('to-be-graded')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                gradingTab === 'to-be-graded'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              To be Graded ({toBeGraded.length})
+            </button>
+            <button
+              onClick={() => setGradingTab('graded')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                gradingTab === 'graded'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Graded ({graded.length})
+            </button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {completedStudents.map((student) => (
-            <div key={student.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-semibold text-gray-900">{student.name}</h3>
-                  <p className="text-sm text-gray-600">{student.email}</p>
+          {studentsToShow.map((student) => {
+            const vivaSchedule = vivaSchedules.find(vs => vs.studentId === student._id);
+            return (
+              <div key={student._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                    <p className="text-sm text-gray-600">{student.email}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      student.status === 'Graded' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {student.status}
+                    </span>
+                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                      Viva Completed
+                    </span>
+                  </div>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  student.status === 'Graded' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {student.status}
-                </span>
-              </div>
               
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -1101,18 +1267,23 @@ function LectureDashboard() {
               </div>
               
               <button 
-                onClick={() => student.status === 'Graded' ? handleAssignGrade(student) : handleAssignGrade(student)}
+                onClick={() => handleAssignGrade(student)}
                 className="w-full mt-3 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm"
               >
                 {student.status === 'Graded' ? 'Edit Grade' : 'Assign Grade'}
               </button>
             </div>
-          ))}
+            );
+          })}
           
-          {completedStudents.length === 0 && (
+          {studentsToShow.length === 0 && (
             <div className="col-span-full text-center py-8 text-gray-500">
               <Award size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>No students have completed their internship yet.</p>
+              <p>
+                {gradingTab === 'to-be-graded' 
+                  ? 'No students available for grading.' 
+                  : 'No students have been graded yet.'}
+              </p>
             </div>
           )}
         </div>
@@ -1476,7 +1647,7 @@ function LectureDashboard() {
 
             {/* Grading Form */}
             <div className="space-y-6">
-              {/* Report Mark (Auto-filled) */}
+              {/* Report Mark (Manual Entry) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Report Score (out of 100) *
@@ -1487,14 +1658,36 @@ function LectureDashboard() {
                   max="100"
                   step="0.1"
                   value={gradingForm.reportMark}
-                  onChange={(e) => setGradingForm({...gradingForm, reportMark: e.target.value})}
+                  onChange={(e) => {
+                    let reportMark = e.target.value;
+                    // Validate and clamp to 0-100
+                    const numValue = parseFloat(reportMark);
+                    if (!isNaN(numValue)) {
+                      if (numValue < 0) reportMark = '0';
+                      if (numValue > 100) reportMark = '100';
+                    }
+                    
+                    const finalScore = calculateFinalScore(
+                      parseFloat(gradingForm.vivaScore || 0),
+                      parseFloat(reportMark || 0),
+                      parseFloat(gradingForm.companyRating || 0)
+                    );
+                    const finalGrade = calculateGrade(finalScore);
+                    
+                    setGradingForm({
+                      ...gradingForm,
+                      reportMark,
+                      finalScore,
+                      finalGrade
+                    });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Auto-filled from Reports section"
+                  placeholder="Enter report score manually"
                   required
                 />
               </div>
 
-              {/* Company Rating (Auto-filled) */}
+              {/* Company Rating (Auto-filled from feedback, editable) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Company Rating (out of 100) *
@@ -1505,9 +1698,31 @@ function LectureDashboard() {
                   max="100"
                   step="0.1"
                   value={gradingForm.companyRating}
-                  onChange={(e) => setGradingForm({...gradingForm, companyRating: e.target.value})}
+                  onChange={(e) => {
+                    let companyRating = e.target.value;
+                    // Validate and clamp to 0-100
+                    const numValue = parseFloat(companyRating);
+                    if (!isNaN(numValue)) {
+                      if (numValue < 0) companyRating = '0';
+                      if (numValue > 100) companyRating = '100';
+                    }
+                    
+                    const finalScore = calculateFinalScore(
+                      parseFloat(gradingForm.vivaScore || 0),
+                      parseFloat(gradingForm.reportMark || 0),
+                      parseFloat(companyRating || 0)
+                    );
+                    const finalGrade = calculateGrade(finalScore);
+                    
+                    setGradingForm({
+                      ...gradingForm,
+                      companyRating,
+                      finalScore,
+                      finalGrade
+                    });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Auto-filled from Company Feedback"
+                  placeholder="Auto-filled from Company Feedback (rating * 20)"
                   required
                 />
               </div>
@@ -1524,7 +1739,14 @@ function LectureDashboard() {
                   step="0.1"
                   value={gradingForm.vivaScore}
                   onChange={(e) => {
-                    const vivaScore = e.target.value;
+                    let vivaScore = e.target.value;
+                    // Validate and clamp to 0-100
+                    const numValue = parseFloat(vivaScore);
+                    if (!isNaN(numValue)) {
+                      if (numValue < 0) vivaScore = '0';
+                      if (numValue > 100) vivaScore = '100';
+                    }
+                    
                     const finalScore = calculateFinalScore(
                       parseFloat(vivaScore || 0),
                       parseFloat(gradingForm.reportMark || 0),
