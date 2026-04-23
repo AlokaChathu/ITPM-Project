@@ -104,26 +104,15 @@ function Navbar2() {
               {menuOpen && (
                 <div className="absolute right-0 top-full z-10 pt-2 text-black">
                   <ul className="list-none m-0 min-w-48 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-lg">
-                    {!userData.isAccountVerified && (
-                      <li onClick={sendVerificationOtp} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
-                        Verify email
-                      </li>
-                    )}
-                    {userData.isAccountVerified && (
-                      <li onClick={viewHome} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
-                        Home
-                      </li>
-                    )}
-                    {userData.isAccountVerified && (
-                      <li onClick={viewDashboard} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
-                        Dashboard
-                      </li>
-                    )}
-                    {userData.isAccountVerified && (
-                      <li onClick={viewProfile} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
-                        My Profile
-                      </li>
-                    )}
+                    <li onClick={viewHome} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
+                      Home
+                    </li>
+                    <li onClick={viewDashboard} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
+                      Dashboard
+                    </li>
+                    <li onClick={viewProfile} className="px-4 py-2 hover:bg-slate-50 cursor-pointer">
+                      My Profile
+                    </li>
                     <li onClick={logout} className="px-4 py-2 hover:bg-slate-50 cursor-pointer text-rose-600">
                       Logout
                     </li>
@@ -187,26 +176,15 @@ function Navbar2() {
             <div className="p-2 text-sm">
               {!userData ? null : (
                 <>
-                  {!userData.isAccountVerified && (
-                    <button onClick={sendVerificationOtp} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
-                      Verify email
-                    </button>
-                  )}
-                  {userData.isAccountVerified && (
-                    <button onClick={viewHome} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
-                      Home
-                    </button>
-                  )}
-                  {userData.isAccountVerified && (
-                    <button onClick={viewDashboard} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
-                      Dashboard
-                    </button>
-                  )}
-                  {userData.isAccountVerified && (
-                    <button onClick={viewProfile} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
-                      My Profile
-                    </button>
-                  )}
+                  <button onClick={viewHome} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
+                    Home
+                  </button>
+                  <button onClick={viewDashboard} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
+                    Dashboard
+                  </button>
+                  <button onClick={viewProfile} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50">
+                    My Profile
+                  </button>
                   <button onClick={logout} className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-600">
                     Logout
                   </button>

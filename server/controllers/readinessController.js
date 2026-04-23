@@ -3,7 +3,7 @@ import Readiness from "../models/Readiness.model.js";
 // [STUDENT] Submit CV and Academic details
 export const submitReadinessDetails = async (req, res) => {
     try {
-        const { cvUrl, academicPerformance, studentId } = req.body;
+        const { cvUrl, academicPerformance, year, semester, currentGpa, otherSkills, academicAchievements, studentId } = req.body;
         
         // Prioritize the secure token ID, but fallback to the body ID if needed
         const idToUse = req.userId || studentId;
@@ -18,6 +18,11 @@ export const submitReadinessDetails = async (req, res) => {
             // Safely update (allows students to clear out their academic performance text)
             if (cvUrl !== undefined) readiness.cvUrl = cvUrl;
             if (academicPerformance !== undefined) readiness.academicPerformance = academicPerformance;
+            if (year !== undefined) readiness.year = year;
+            if (semester !== undefined) readiness.semester = semester;
+            if (currentGpa !== undefined) readiness.currentGpa = currentGpa;
+            if (otherSkills !== undefined) readiness.otherSkills = otherSkills;
+            if (academicAchievements !== undefined) readiness.academicAchievements = academicAchievements;
             
             // Anytime a student updates their CV, push them back to "In Review"
             readiness.status = 'In Review'; 
@@ -29,6 +34,11 @@ export const submitReadinessDetails = async (req, res) => {
                 studentId: idToUse,
                 cvUrl,
                 academicPerformance,
+                year,
+                semester,
+                currentGpa,
+                otherSkills,
+                academicAchievements,
                 status: 'In Review'
             });
             await readiness.save();
@@ -84,6 +94,23 @@ export const evaluateStudent = async (req, res) => {
 
         await readiness.save();
         res.json({ success: true, message: "Evaluation updated successfully", data: readiness });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// [COMPANY] Get full student details including personal and academic information
+export const getStudentFullDetails = async (req, res) => {
+    const { studentId } = req.params;
+    
+    try {
+        const readiness = await Readiness.findOne({ studentId }).populate('studentId', 'name email age');
+        
+        if (!readiness) {
+            return res.json({ success: false, message: "Student profile not found." });
+        }
+        
+        res.json({ success: true, data: readiness });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

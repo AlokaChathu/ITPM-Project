@@ -3,7 +3,7 @@ import { AppContent } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar2';
+import StudentNavigation from '../components/StudentNavigation';
 
 function StudentReadiness() {
   const { userData } = useContext(AppContent);
@@ -17,6 +17,11 @@ function StudentReadiness() {
   // Form State
   const [cvUrl, setCvUrl] = useState('');
   const [academicPerformance, setAcademicPerformance] = useState('');
+  const [year, setYear] = useState('');
+  const [semester, setSemester] = useState('');
+  const [currentGpa, setCurrentGpa] = useState('');
+  const [otherSkills, setOtherSkills] = useState('');
+  const [academicAchievements, setAcademicAchievements] = useState('');
 
   // Fetch the student's evaluation status
   const fetchMyReadiness = async () => {
@@ -28,6 +33,11 @@ function StudentReadiness() {
         setReadinessData(data.data);
         setCvUrl(data.data.cvUrl || '');
         setAcademicPerformance(data.data.academicPerformance || '');
+        setYear(data.data.year || '');
+        setSemester(data.data.semester || '');
+        setCurrentGpa(data.data.currentGpa || '');
+        setOtherSkills(data.data.otherSkills?.join(', ') || '');
+        setAcademicAchievements(data.data.academicAchievements?.join(', ') || '');
       } else {
         setReadinessData(null);
       }
@@ -51,8 +61,11 @@ function StudentReadiness() {
     // 1. Trim whitespace to prevent empty space submissions
     const trimmedCvUrl = cvUrl.trim();
     const trimmedAcademic = academicPerformance.trim();
+    const trimmedGpa = currentGpa.trim();
+    const trimmedSkills = otherSkills.trim();
+    const trimmedAchievements = academicAchievements.trim();
 
-    // 2. Empty check
+    // 2. Empty check for required fields
     if (!trimmedCvUrl) {
       return toast.error("Please provide a CV link.");
     }
@@ -64,10 +77,10 @@ function StudentReadiness() {
     }
 
     // 4. Strict GPA / Numeric Validation (Between 0 and 4)
-    if (trimmedAcademic) {
-      const gpaValue = parseFloat(trimmedAcademic);
+    if (trimmedGpa) {
+      const gpaValue = parseFloat(trimmedGpa);
       if (isNaN(gpaValue) || gpaValue < 0 || gpaValue > 4) {
-        return toast.error("Academic performance must be a valid number between 0 and 4 (e.g., 3.5).");
+        return toast.error("GPA must be a valid number between 0 and 4 (e.g., 3.5).");
       }
     }
 
@@ -78,6 +91,11 @@ function StudentReadiness() {
       const payload = {
         cvUrl: trimmedCvUrl,
         academicPerformance: trimmedAcademic,
+        year: year,
+        semester: semester,
+        currentGpa: trimmedGpa ? parseFloat(trimmedGpa) : 0,
+        otherSkills: trimmedSkills ? trimmedSkills.split(',').map(s => s.trim()).filter(s => s) : [],
+        academicAchievements: trimmedAchievements ? trimmedAchievements.split(',').map(s => s.trim()).filter(s => s) : [],
         studentId: userData.id,
         userId: userData.id
       };
@@ -107,7 +125,7 @@ function StudentReadiness() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-indigo-50">
-      <Navbar />
+      <StudentNavigation />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 ">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -199,6 +217,71 @@ function StudentReadiness() {
                         value={academicPerformance}
                         onChange={(e) => setAcademicPerformance(e.target.value)}
                         placeholder="e.g., 3.5"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-2">Year</label>
+                        <select
+                          value={year}
+                          onChange={(e) => setYear(e.target.value)}
+                          className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                        >
+                          <option value="">Select Year</option>
+                          <option value="1">Year 1</option>
+                          <option value="2">Year 2</option>
+                          <option value="3">Year 3</option>
+                          <option value="4">Year 4</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-2">Semester</label>
+                        <select
+                          value={semester}
+                          onChange={(e) => setSemester(e.target.value)}
+                          className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                        >
+                          <option value="">Select Semester</option>
+                          <option value="1">Semester 1</option>
+                          <option value="2">Semester 2</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-2">Current GPA</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="4"
+                        step="0.01"
+                        value={currentGpa}
+                        onChange={(e) => setCurrentGpa(e.target.value)}
+                        placeholder="e.g., 3.5"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-2">Other Skills (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={otherSkills}
+                        onChange={(e) => setOtherSkills(e.target.value)}
+                        placeholder="e.g., JavaScript, Python, React"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-2">Academic Achievements/Diplomas (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={academicAchievements}
+                        onChange={(e) => setAcademicAchievements(e.target.value)}
+                        placeholder="e.g., Dean's List, AWS Certification"
                         className="w-full rounded-xl border border-slate-200 bg-white p-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
                       />
                     </div>

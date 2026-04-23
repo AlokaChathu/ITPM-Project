@@ -7,6 +7,11 @@ const applicationSchema = new mongoose.Schema({
         type: String, 
         enum: ['Applied', 'Interviewing', 'Accepted', 'Rejected'], 
         default: 'Applied' 
+    },
+    internshipStatus: {
+        type: String,
+        enum: ['ongoing', 'completed'],
+        default: null
     }
 }, { timestamps: true });
 
