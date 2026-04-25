@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Schedule (Admin)
+method: DELETE
+url: '{{baseUrl}}/api/viva-schedule/:scheduleId'
+order: 4000
+pathVariables:
+  - key: scheduleId
+    value: '{{scheduleId}}'

@@ -1,0 +1,18 @@
+$kind: http-request
+name: Evaluate Student (Admin)
+method: PUT
+url: '{{baseUrl}}/api/readiness/evaluate/:studentId'
+order: 5000
+pathVariables:
+  - key: studentId
+    value: '{{userId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "evaluation": "Ready",
+      "comments": "Good candidate"
+    }

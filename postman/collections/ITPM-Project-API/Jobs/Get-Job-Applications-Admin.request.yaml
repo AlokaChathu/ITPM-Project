@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Job Applications (Admin)
+method: GET
+url: '{{baseUrl}}/api/jobs/applications/:jobId'
+order: 3000
+pathVariables:
+  - key: jobId
+    value: '{{jobId}}'

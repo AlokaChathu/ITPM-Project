@@ -1,0 +1,8 @@
+$kind: http-request
+name: Download Report
+method: GET
+url: '{{baseUrl}}/api/report/download/:id'
+order: 6000
+pathVariables:
+  - key: id
+    value: ''

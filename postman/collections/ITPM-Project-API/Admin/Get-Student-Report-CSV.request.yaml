@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Student Report CSV
+method: GET
+url: '{{baseUrl}}/api/admin/reports/students.csv'
+order: 19000

@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Internship Status (Company)
+method: PUT
+url: '{{baseUrl}}/api/jobs/company/internship-status/:applicationId'
+order: 14000
+pathVariables:
+  - key: applicationId
+    value: '{{applicationId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "internshipStatus": "completed"
+    }

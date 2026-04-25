@@ -1,0 +1,16 @@
+$kind: http-request
+name: Admin Register
+method: POST
+url: '{{baseUrl}}/api/admin/register'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "password": "adminpass123"
+    }

@@ -1,0 +1,14 @@
+$kind: http-request
+name: Send Reset OTP
+method: POST
+url: '{{baseUrl}}/api/auth/send-reset-otp'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "john@example.com"
+    }

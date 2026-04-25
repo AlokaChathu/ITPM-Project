@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get All Portfolios (Admin)
+method: GET
+url: '{{baseUrl}}/api/portfolio/all'
+order: 3000

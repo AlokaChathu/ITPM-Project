@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get My Applications (Student)
+method: GET
+url: '{{baseUrl}}/api/jobs/my-applications'
+order: 7000

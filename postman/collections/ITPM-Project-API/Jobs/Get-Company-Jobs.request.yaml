@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Company Jobs
+method: GET
+url: '{{baseUrl}}/api/jobs/company/jobs'
+order: 9000

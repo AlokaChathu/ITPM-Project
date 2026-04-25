@@ -1,0 +1,14 @@
+$kind: http-request
+name: Verify Account
+method: POST
+url: '{{baseUrl}}/api/auth/verify-account'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "otp": "123456"
+    }

@@ -1,0 +1,14 @@
+$kind: http-request
+name: Apply For Job (Student)
+method: POST
+url: '{{baseUrl}}/api/jobs/apply'
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "jobId": "{{jobId}}"
+    }

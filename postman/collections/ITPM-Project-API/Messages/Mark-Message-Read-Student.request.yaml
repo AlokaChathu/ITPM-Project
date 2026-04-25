@@ -1,0 +1,8 @@
+$kind: http-request
+name: Mark Message Read (Student)
+method: PUT
+url: '{{baseUrl}}/api/messages/read/:messageId'
+order: 6000
+pathVariables:
+  - key: messageId
+    value: '{{messageId}}'

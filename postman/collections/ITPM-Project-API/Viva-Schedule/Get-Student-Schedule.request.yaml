@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Student Schedule
+method: GET
+url: '{{baseUrl}}/api/viva-schedule/student'
+order: 5000

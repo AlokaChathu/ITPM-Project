@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Job (Admin)
+method: DELETE
+url: '{{baseUrl}}/api/jobs/delete/:jobId'
+order: 5000
+pathVariables:
+  - key: jobId
+    value: '{{jobId}}'

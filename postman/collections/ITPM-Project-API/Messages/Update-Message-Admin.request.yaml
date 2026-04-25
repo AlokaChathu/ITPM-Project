@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Message (Admin)
+method: PUT
+url: '{{baseUrl}}/api/messages/update/:messageId'
+order: 3000
+pathVariables:
+  - key: messageId
+    value: '{{messageId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "content": "Updated message content"
+    }

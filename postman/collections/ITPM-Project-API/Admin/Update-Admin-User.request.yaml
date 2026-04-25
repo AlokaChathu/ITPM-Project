@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Admin User
+method: PATCH
+url: '{{baseUrl}}/api/admin/users/:id'
+order: 8000
+pathVariables:
+  - key: id
+    value: ''
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Updated Admin"
+    }

@@ -1,0 +1,16 @@
+$kind: http-request
+name: Create Notification
+method: POST
+url: '{{baseUrl}}/api/admin/notifications'
+order: 23000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Important Notice",
+      "message": "Please check your internship status.",
+      "targetRole": "Student"
+    }

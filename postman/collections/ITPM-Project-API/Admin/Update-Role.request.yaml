@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Role
+method: PATCH
+url: '{{baseUrl}}/api/admin/roles/:id'
+order: 11000
+pathVariables:
+  - key: id
+    value: ''
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "role": "moderator"
+    }

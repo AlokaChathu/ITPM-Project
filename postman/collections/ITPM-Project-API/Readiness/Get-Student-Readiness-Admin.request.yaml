@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Student Readiness (Admin)
+method: GET
+url: '{{baseUrl}}/api/readiness/student/:studentId'
+order: 4000
+pathVariables:
+  - key: studentId
+    value: '{{userId}}'

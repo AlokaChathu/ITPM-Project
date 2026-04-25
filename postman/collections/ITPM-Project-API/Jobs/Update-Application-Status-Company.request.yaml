@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Application Status (Company)
+method: PUT
+url: '{{baseUrl}}/api/jobs/company/application/:applicationId'
+order: 13000
+pathVariables:
+  - key: applicationId
+    value: '{{applicationId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "Accepted"
+    }

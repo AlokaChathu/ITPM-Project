@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get All Evaluations (Admin)
+method: GET
+url: '{{baseUrl}}/api/readiness/all'
+order: 3000

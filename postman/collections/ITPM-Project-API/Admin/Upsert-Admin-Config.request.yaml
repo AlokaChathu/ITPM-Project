@@ -1,0 +1,15 @@
+$kind: http-request
+name: Upsert Admin Config
+method: POST
+url: '{{baseUrl}}/api/admin/config'
+order: 13000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "key": "setting",
+      "value": "value"
+    }

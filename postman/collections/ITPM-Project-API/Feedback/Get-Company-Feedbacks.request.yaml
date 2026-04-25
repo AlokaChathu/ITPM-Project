@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Company Feedbacks
+method: GET
+url: '{{baseUrl}}/api/feedback/company'
+order: 2000

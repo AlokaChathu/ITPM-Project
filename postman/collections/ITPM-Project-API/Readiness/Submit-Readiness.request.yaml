@@ -1,0 +1,17 @@
+$kind: http-request
+name: Submit Readiness
+method: POST
+url: '{{baseUrl}}/api/readiness/submit'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "studentId": "{{userId}}",
+      "skills": ["JavaScript", "React"],
+      "experience": "1 year",
+      "gpa": 3.5
+    }

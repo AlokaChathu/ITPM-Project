@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get My Portfolio
+method: GET
+url: '{{baseUrl}}/api/portfolio/my-portfolio'
+order: 1000
