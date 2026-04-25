@@ -1,4 +1,6 @@
 import userModel from "../models/userModel.js";
+import Application from "../models/Application.model.js";
+import Job from "../models/Job.model.js";
 
 export const getUserData =async (req,res)=>{
 
@@ -139,6 +141,50 @@ export const updateStudentGrade = async (req, res) => {
   } catch (err) {
     console.error("Error updating student grade:", err);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+// GET internship details for a student
+export const getInternshipDetails = async (req, res) => {
+  try {
+    const uid = req.userId;
+
+    // Find the student's accepted application
+    const application = await Application.findOne({ 
+      studentId: uid, 
+      status: 'Accepted' 
+    }).populate('jobId');
+
+    if (!application) {
+      return res.json({ 
+        success: false, 
+        message: "No accepted internship found",
+        internshipData: null 
+      });
+    }
+
+    const job = application.jobId;
+    
+    const internshipData = {
+      companyName: job?.companyName || 'N/A',
+      position: job?.jobTitle || 'N/A',
+      startDate: application.createdAt,
+      endDate: application.updatedAt,
+      internshipStatus: application.internshipStatus || 'N/A'
+    };
+
+    res.json({ 
+      success: true, 
+      internshipData 
+    });
+  } catch (error) {
+    console.error("Error fetching internship details:", error);
+    res.json({ 
+      success: false, 
+      message: error.message,
+      internshipData: null 
+    });
   }
 };
 
