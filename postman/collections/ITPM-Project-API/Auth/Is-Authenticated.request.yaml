@@ -1,0 +1,5 @@
+$kind: http-request
+name: Is Authenticated
+method: GET
+url: '{{baseUrl}}/api/auth/is-auth'
+order: 6000

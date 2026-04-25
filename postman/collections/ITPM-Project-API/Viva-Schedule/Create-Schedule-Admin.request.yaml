@@ -1,0 +1,18 @@
+$kind: http-request
+name: Create Schedule (Admin)
+method: POST
+url: '{{baseUrl}}/api/viva-schedule/create'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "studentId": "{{userId}}",
+      "date": "2026-05-15",
+      "time": "10:00 AM",
+      "venue": "Room 101",
+      "examiner": "Dr. Smith"
+    }

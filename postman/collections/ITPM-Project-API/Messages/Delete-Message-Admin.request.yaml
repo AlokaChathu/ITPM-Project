@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Message (Admin)
+method: DELETE
+url: '{{baseUrl}}/api/messages/delete/:messageId'
+order: 4000
+pathVariables:
+  - key: messageId
+    value: '{{messageId}}'

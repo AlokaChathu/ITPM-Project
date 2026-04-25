@@ -1,0 +1,12 @@
+$kind: http-request
+name: Upload Report (Student)
+method: POST
+url: '{{baseUrl}}/api/report/upload'
+order: 1000
+body:
+  type: formdata
+  content:
+    - key: report
+      type: file
+      src: ''
+      description: PDF file to upload

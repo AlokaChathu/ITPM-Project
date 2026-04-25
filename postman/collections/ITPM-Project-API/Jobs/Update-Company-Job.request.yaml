@@ -1,0 +1,18 @@
+$kind: http-request
+name: Update Company Job
+method: PUT
+url: '{{baseUrl}}/api/jobs/company/update/:jobId'
+order: 11000
+pathVariables:
+  - key: jobId
+    value: '{{jobId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Updated Title",
+      "isActive": false
+    }

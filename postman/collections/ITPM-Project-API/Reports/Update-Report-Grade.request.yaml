@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Report Grade
+method: PUT
+url: '{{baseUrl}}/api/report/grade/:id'
+order: 7000
+pathVariables:
+  - key: id
+    value: ''
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "grade": "A+"
+    }

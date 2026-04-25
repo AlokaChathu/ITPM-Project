@@ -206,11 +206,154 @@ function LectureDashboard() {
       setInternshipReports([]);
     }
 
-    // Keep other data empty
-    setMonthlyData([]);
-    setGradeDistribution([]);
-    setCompanyRatings([]);
-    setInternshipProgress([]);
+    // Process chart data
+    processMonthlyData(internshipReports);
+    processGradeDistribution(internshipReports);
+    processCompanyRatings(companyFeedbacks);
+    processInternshipProgress(students, vivaSchedules, internshipReports);
+  };
+
+  // Process monthly performance data
+  const processMonthlyData = (reports) => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyStats = {};
+    
+    // Initialize all months
+    monthNames.forEach(month => {
+      monthlyStats[month] = { submissions: 0, completed: 0 };
+    });
+    
+    // Process reports
+    reports.forEach(report => {
+      const date = new Date(report.submittedDate);
+      const month = monthNames[date.getMonth()];
+      if (monthlyStats[month]) {
+        monthlyStats[month].submissions++;
+        if (report.status === 'Approved') {
+          monthlyStats[month].completed++;
+        }
+      }
+    });
+    
+    // Convert to array
+    const data = monthNames.map(month => ({
+      month,
+      submissions: monthlyStats[month].submissions,
+      completed: monthlyStats[month].completed
+    }));
+    
+    setMonthlyData(data);
+  };
+
+  // Process grade distribution data
+  const processGradeDistribution = (reports) => {
+    const gradeRanges = {
+      'A': { min: 80, max: 100, count: 0 },
+      'B': { min: 70, max: 79, count: 0 },
+      'C': { min: 60, max: 69, count: 0 },
+      'D': { min: 50, max: 59, count: 0 },
+      'F': { min: 0, max: 49, count: 0 }
+    };
+    
+    let totalGraded = 0;
+    
+    reports.forEach(report => {
+      if (report.mark !== null && report.mark !== undefined) {
+        totalGraded++;
+        const mark = report.mark;
+        for (const [grade, range] of Object.entries(gradeRanges)) {
+          if (mark >= range.min && mark <= range.max) {
+            gradeRanges[grade].count++;
+            break;
+          }
+        }
+      }
+    });
+    
+    // Calculate percentages
+    const data = Object.entries(gradeRanges).map(([grade, range]) => ({
+      grade,
+      count: range.count,
+      percentage: totalGraded > 0 ? Math.round((range.count / totalGraded) * 100) : 0
+    })).filter(item => item.count > 0); // Only show grades with data
+    
+    setGradeDistribution(data.length > 0 ? data : [{ grade: 'No Data', count: 0, percentage: 0 }]);
+  };
+
+  // Process company ratings data
+  const processCompanyRatings = (feedbacks) => {
+    const companyRatingsMap = {};
+    
+    feedbacks.forEach(feedback => {
+      const company = feedback.company;
+      if (!companyRatingsMap[company]) {
+        companyRatingsMap[company] = { total: 0, count: 0 };
+      }
+      companyRatingsMap[company].total += feedback.rating;
+      companyRatingsMap[company].count++;
+    });
+    
+    const data = Object.entries(companyRatingsMap).map(([company, stats]) => ({
+      company,
+      rating: Math.round((stats.total / stats.count) * 10) / 10
+    })).sort((a, b) => b.rating - a.rating);
+    
+    setCompanyRatings(data.length > 0 ? data : [{ company: 'No Data', rating: 0 }]);
+  };
+
+  // Process internship progress data
+  const processInternshipProgress = (students, schedules, reports) => {
+    const stages = [
+      { name: 'Applied', total: 0, completed: 0 },
+      { name: 'Interview', total: 0, completed: 0 },
+      { name: 'Viva', total: 0, completed: 0 },
+      { name: 'Report', total: 0, completed: 0 },
+      { name: 'Completed', total: 0, completed: 0 }
+    ];
+    
+    // Count students at each stage based on reports and schedules
+    students.forEach(student => {
+      const studentReport = reports.find(r => r.studentEmail === student.email);
+      const studentSchedule = schedules.find(s => s.studentId === student._id);
+      
+      // Applied stage - all students
+      stages[0].total++;
+      stages[0].completed++;
+      
+      // Interview stage - students with reports
+      if (studentReport) {
+        stages[1].total++;
+        stages[1].completed++;
+      }
+      
+      // Viva stage - students with schedules
+      if (studentSchedule) {
+        stages[2].total++;
+        if (studentSchedule.status === 'Completed') {
+          stages[2].completed++;
+        }
+      }
+      
+      // Report stage - students with approved reports
+      if (studentReport && studentReport.status === 'Approved') {
+        stages[3].total++;
+        stages[3].completed++;
+      }
+      
+      // Completed stage - students with marks
+      if (studentReport && studentReport.mark !== null && studentReport.mark !== undefined) {
+        stages[4].total++;
+        stages[4].completed++;
+      }
+    });
+    
+    const data = stages.map(stage => ({
+      stage: stage.name,
+      count: stage.total,
+      completed: stage.completed
+    }));
+    
+    setInternshipProgress(data);
   };
 
   const logout = async () => {
@@ -698,72 +841,93 @@ function LectureDashboard() {
   };
 
   const renderOverview = () => {
-    const COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#a855f7'];
+    const COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#a855f7'];
     
-    // ...
     return (
       <div className="space-y-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <Users size={32} />
-              <span className="text-3xl font-bold">{students.length}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm hover:shadow-md transition-all p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Total Students</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{students.length}</p>
+                <p className="text-xs text-slate-400 mt-1">Active interns</p>
+              </div>
+              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
+                <Users size={22} className="text-indigo-600" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold">Total Students</h3>
-            <p className="text-blue-100 text-sm">Active interns</p>
           </div>
 
-          <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <Calendar size={32} />
-              <span className="text-3xl font-bold">{vivaSchedules.length}</span>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm hover:shadow-md transition-all p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Viva Schedules</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{vivaSchedules.length}</p>
+                <p className="text-xs text-slate-400 mt-1">Pending & completed</p>
+              </div>
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <Calendar size={22} className="text-emerald-600" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold">Viva Schedules</h3>
-            <p className="text-teal-100 text-sm">Pending & completed</p>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <FileText size={32} />
-              <span className="text-3xl font-bold">{internshipReports.length}</span>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm hover:shadow-md transition-all p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Reports</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{internshipReports.length}</p>
+                <p className="text-xs text-slate-400 mt-1">To review</p>
+              </div>
+              <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+                <FileText size={22} className="text-amber-600" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold">Reports</h3>
-            <p className="text-orange-100 text-sm">To review</p>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <Star size={32} />
-              <span className="text-3xl font-bold">{companyFeedbacks.length}</span>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm hover:shadow-md transition-all p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Feedbacks</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{companyFeedbacks.length}</p>
+                <p className="text-xs text-slate-400 mt-1">Company reviews</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                <Star size={22} className="text-purple-600" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold">Feedbacks</h3>
-            <p className="text-purple-100 text-sm">Company reviews</p>
           </div>
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Monthly Performance Chart */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Performance</h3>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold text-slate-900">Monthly Performance</h3>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Submissions vs Completed</span>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Area type="monotone" dataKey="submissions" stackId="1" stroke="#4f46e5" fill="#4f46e5" name="Submissions" />
-                <Area type="monotone" dataKey="completed" stackId="1" stroke="#10b981" fill="#10b981" name="Completed" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
+                <Area type="monotone" dataKey="submissions" stackId="1" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} name="Submissions" />
+                <Area type="monotone" dataKey="completed" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.15} name="Completed" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           {/* Grade Distribution Chart */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Grade Distribution</h3>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold text-slate-900">Grade Distribution</h3>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">By Grade Range</span>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={gradeDistribution}
@@ -771,46 +935,53 @@ function LectureDashboard() {
                   cy="50%"
                   labelLine={false}
                   label={({ grade, percentage }) => `${grade}: ${percentage}%`}
-                  outerRadius={80}
+                  outerRadius={90}
                   fill="#8884d8"
                   dataKey="count"
+                  strokeWidth={2}
                 >
                   {gradeDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
           {/* Company Ratings Chart */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Ratings</h3>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold text-slate-900">Company Ratings</h3>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Average Rating (0-5)</span>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={companyRatings}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="company" angle={-45} textAnchor="end" height={80} />
-                <YAxis domain={[0, 5]} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="rating" fill="#f59e0b" name="Average Rating" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="company" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 5]} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
+                <Bar dataKey="rating" fill="#f59e0b" name="Average Rating" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Internship Progress Chart */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Internship Progress</h3>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold text-slate-900">Internship Progress</h3>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Stage Completion</span>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={internshipProgress}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="count" stroke="#4f46e5" strokeWidth={2} name="Total" />
-                <Line type="monotone" dataKey="completed" stroke="#10b981" strokeWidth={2} name="Completed" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="stage" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
+                <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ r: 4, fill: '#6366f1' }} name="Total" />
+                <Line type="monotone" dataKey="completed" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: '#10b981' }} name="Completed" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -846,69 +1017,67 @@ function LectureDashboard() {
     }
 
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Students</h2>
+      <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm">
+        <div className="px-6 py-5 border-b border-white/30 flex justify-between items-center">
+          <h2 className="text-base font-semibold text-slate-900">Students</h2>
           <div className="flex items-center gap-3">
             <select 
               value={studentStatusFilter}
               onChange={(e) => setStudentStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white"
             >
               <option value="All">All Status</option>
               <option value="In Progress">In Progress</option>
               <option value="Graded">Graded</option>
             </select>
             <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 w-56"
               />
             </div>
           </div>
         </div>
         
         {searchTerm && filteredStudents.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <Search size={48} className="mx-auto mb-4 text-gray-300" />
-            <p>No students found matching "{searchTerm}"</p>
+          <div className="text-center py-12 text-slate-400">
+            <Search size={40} className="mx-auto mb-3 text-slate-300" />
+            <p className="text-sm">No students found matching "{searchTerm}"</p>
           </div>
         )}
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Name</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Email</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+              <tr className="bg-white/20 backdrop-blur-sm">
+                <th className="text-left py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/10">
               {filteredStudents.map((student) => (
-                <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4">
+                <tr key={student.id} className="hover:bg-white/20 transition-colors">
+                  <td className="py-3.5 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-semibold text-sm">
+                      <div className="w-8 h-8 bg-indigo-50 rounded-full flex items-center justify-center">
+                        <span className="text-indigo-600 font-semibold text-xs">
                           {student.name.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{student.name}</p>
-                      </div>
+                      <span className="text-sm font-medium text-slate-900">{student.name}</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-gray-600">{student.email}</td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                  <td className="py-3.5 px-6 text-sm text-slate-500">{student.email}</td>
+                  <td className="py-3.5 px-6">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       student.status === 'Graded' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'bg-purple-50 text-purple-700 ring-1 ring-purple-600/20' 
+                        : 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20'
                     }`}>
                       {student.status || 'In Progress'}
                     </span>
@@ -923,113 +1092,121 @@ function LectureDashboard() {
   };
 
   const renderVivaSchedules = () => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Viva Schedules</h2>
+    <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm">
+      <div className="px-6 py-5 border-b border-white/30 flex justify-between items-center">
+        <h2 className="text-base font-semibold text-slate-900">Viva Schedules</h2>
         <button 
           onClick={handleOpenScheduleModal}
-          className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
         >
-          <Plus size={18} />
+          <Plus size={16} />
           Schedule Viva
         </button>
       </div>
       
-      {/* Students who completed internship */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Students Ready for Viva</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {students
-            .filter(student => student.status === 'Internship Completed')
-            .filter(student => !vivaSchedules.some(schedule => schedule.studentId === student._id))
-            .map((student) => (
-              <div key={student._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{student.name}</h4>
-                    <p className="text-sm text-gray-600">{student.email}</p>
-                    <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                      {student.status || 'In Progress'}
-                    </span>
+      <div className="p-6">
+        {/* Students who completed internship */}
+        <div className="mb-8">
+          <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <CheckCircle size={16} className="text-emerald-500" />
+            Students Ready for Viva
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {students
+              .filter(student => student.status === 'Internship Completed')
+              .filter(student => !vivaSchedules.some(schedule => schedule.studentId === student._id))
+              .map((student) => (
+                <div key={student._id} className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg p-4 hover:bg-white/50 transition-all group">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-slate-900">{student.name}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">{student.email}</p>
+                      <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-medium rounded-full ring-1 ring-emerald-600/20">
+                        {student.status || 'In Progress'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleScheduleViva(student)}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      title="Schedule Viva"
+                    >
+                      <Calendar size={16} />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleScheduleViva(student)}
-                    className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                    title="Schedule Viva"
-                  >
-                    <Calendar size={16} />
-                  </button>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
-      </div>
 
-      {/* Scheduled Vivas */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Scheduled Vivas</h3>
-        <div className="space-y-4">
-          {vivaSchedules.length > 0 ? (
-            vivaSchedules.map((schedule) => (
-              <div key={schedule.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{schedule.studentName}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {schedule.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={14} />
-                        {schedule.time}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Building size={14} />
-                        {schedule.venue}
-                      </span>
-                      {schedule.notes && (
-                        <span className="flex items-center gap-1">
-                          <FileText size={14} />
-                          {schedule.notes}
+        {/* Scheduled Vivas */}
+        <div>
+          <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <Clock size={16} className="text-indigo-500" />
+            Scheduled Vivas
+          </h3>
+          <div className="space-y-3">
+            {vivaSchedules.length > 0 ? (
+              vivaSchedules.map((schedule) => (
+                <div key={schedule.id} className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg p-4 hover:bg-white/50 transition-all">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-slate-900">{schedule.studentName}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 mt-2 text-xs text-slate-500">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar size={12} className="text-slate-400" />
+                          {schedule.date}
                         </span>
-                      )}
+                        <span className="flex items-center gap-1.5">
+                          <Clock size={12} className="text-slate-400" />
+                          {schedule.time}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Building size={12} className="text-slate-400" />
+                          {schedule.venue}
+                        </span>
+                        {schedule.notes && (
+                          <span className="flex items-center gap-1.5">
+                            <FileText size={12} className="text-slate-400" />
+                            {schedule.notes}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium ring-1 ${
+                        schedule.status === 'Completed' 
+                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' 
+                          : schedule.status === 'Cancelled'
+                          ? 'bg-red-50 text-red-700 ring-red-600/20'
+                          : 'bg-blue-50 text-blue-700 ring-blue-600/20'
+                      }`}>
+                        {schedule.status}
+                      </span>
+                      <button
+                        onClick={() => handleEditSchedule(schedule)}
+                        className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
+                        title="Edit Schedule"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSchedule(schedule.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Delete Schedule"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      schedule.status === 'Completed' 
-                        ? 'bg-green-100 text-green-800' 
-                        : schedule.status === 'Cancelled'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {schedule.status}
-                    </span>
-                    <button
-                      onClick={() => handleEditSchedule(schedule)}
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Edit Schedule"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSchedule(schedule.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete Schedule"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-slate-400">
+                <Calendar size={40} className="mx-auto mb-3 text-slate-300" />
+                <p className="text-sm">No viva schedules yet. Schedule your first viva to get started.</p>
               </div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>No viva schedules yet. Schedule your first viva to get started.</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -1042,14 +1219,14 @@ function LectureDashboard() {
       : internshipReports.filter(report => report.status === reportStatusFilter);
 
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Internship Reports</h2>
+      <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm">
+        <div className="px-6 py-5 border-b border-white/30 flex justify-between items-center">
+          <h2 className="text-base font-semibold text-slate-900">Internship Reports</h2>
           <div className="flex gap-2">
             <select 
               value={reportStatusFilter}
               onChange={(e) => setReportStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white"
             >
               <option>All Status</option>
               <option>Pending Review</option>
@@ -1059,120 +1236,113 @@ function LectureDashboard() {
           </div>
         </div>
         
-        {reportStatusFilter !== 'All Status' && filteredReports.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <FileText size={48} className="mx-auto mb-4 text-gray-300" />
-            <p>No reports found with status "{reportStatusFilter}"</p>
-          </div>
-        )}
-        
-        <div className="space-y-4">
-          {filteredReports.map((report) => (
-            <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  {/* Student Name as Primary Title */}
-                  <h3 className="font-semibold text-lg text-gray-900 mb-1">{report.studentName}</h3>
-                  
-                  {/* Internship Details */}
-                  <div className="space-y-1 mb-3">
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">Internship:</span> {report.internshipTitle}
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">Company:</span> {report.company}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">File:</span> {report.fileName} ({(report.fileSize / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Submitted:</span> {report.submittedDate}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Email:</span> {report.studentEmail}
-                    </p>
-                  </div>
-
-                  {/* Show mark if already graded */}
-                  {report.mark !== null && (
-                    <div className="mb-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        <Award size={14} className="mr-1" />
-                        Mark: {report.mark}%
-                      </span>
+        <div className="p-6">
+          {reportStatusFilter !== 'All Status' && filteredReports.length === 0 && (
+            <div className="text-center py-12 text-slate-400">
+              <FileText size={40} className="mx-auto mb-3 text-slate-300" />
+              <p className="text-sm">No reports found with status "{reportStatusFilter}"</p>
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            {filteredReports.map((report) => (
+              <div key={report.id} className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg p-4 hover:bg-white/50 transition-all">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-slate-900">{report.studentName}</h3>
+                    <div className="space-y-0.5 mt-2">
+                      <p className="text-xs text-slate-500">
+                        <span className="font-medium text-slate-600">Internship:</span> {report.internshipTitle}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        <span className="font-medium text-slate-600">Company:</span> {report.company}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        <span className="font-medium text-slate-600">File:</span> {report.fileName} ({(report.fileSize / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        <span className="font-medium text-slate-600">Submitted:</span> {report.submittedDate}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        <span className="font-medium text-slate-600">Email:</span> {report.studentEmail}
+                      </p>
                     </div>
-                  )}
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    report.status === 'Approved' 
-                      ? 'bg-green-100 text-green-800'
-                      : report.status === 'Rejected'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {report.status}
-                  </span>
-                  
-                  {/* Download Button */}
-                  <button 
-                    onClick={() => window.open(`http://localhost:4000/api/report/download/${report.id}`, '_blank')}
-                    className="px-3 py-1 text-green-600 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
-                    title="Download Report"
-                  >
-                    <Download size={14} />
-                    Download
-                  </button>
-                  
-                  {/* Review Button */}
-                  <button 
-                    onClick={() => handleReviewReport(report)}
-                    className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
-                  >
-                    <FileText size={14} />
-                    Review
-                  </button>
+                    {report.mark !== null && (
+                      <div className="mt-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">
+                          <Award size={12} className="mr-1" />
+                          Mark: {report.mark}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium ring-1 ${
+                      report.status === 'Approved' 
+                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
+                        : report.status === 'Rejected'
+                        ? 'bg-red-50 text-red-700 ring-red-600/20'
+                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+                    }`}>
+                      {report.status}
+                    </span>
+                    <button 
+                      onClick={() => window.open(`http://localhost:4000/api/report/download/${report.id}`, '_blank')}
+                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                      title="Download Report"
+                    >
+                      <Download size={14} />
+                    </button>
+                    <button 
+                      onClick={() => handleReviewReport(report)}
+                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                      title="Review Report"
+                    >
+                      <FileText size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     );
   };
 
   const renderCompanyFeedbacks = () => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Company Feedbacks</h2>
+    <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm">
+      <div className="px-6 py-5 border-b border-white/30 flex justify-between items-center">
+        <h2 className="text-base font-semibold text-slate-900">Company Feedbacks</h2>
         <div className="flex gap-2">
-          <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Filter size={16} />
+          <button className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-600">
+            <Filter size={14} />
             Filter
           </button>
         </div>
       </div>
       
-      <div className="space-y-4">
-        {companyFeedbacks.map((feedback) => (
-          <div key={feedback.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-semibold text-gray-900">{feedback.studentName}</h3>
-                  <span className="text-sm text-gray-600">{feedback.company}</span>
-                  <div className="flex items-center gap-1">
-                    <Star size={14} className="text-yellow-500 fill-current" />
-                    <span className="text-sm font-medium">{feedback.rating}</span>
+      <div className="p-6">
+        <div className="space-y-3">
+          {companyFeedbacks.map((feedback) => (
+            <div key={feedback.id} className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg p-4 hover:bg-white/50 transition-all">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <h3 className="text-sm font-semibold text-slate-900">{feedback.studentName}</h3>
+                    <span className="text-xs text-slate-500">{feedback.company}</span>
+                    <div className="flex items-center gap-1">
+                      <Star size={12} className="text-amber-500 fill-current" />
+                      <span className="text-xs font-medium text-slate-700">{feedback.rating}</span>
+                    </div>
                   </div>
+                  <p className="text-xs text-slate-500">{feedback.feedback}</p>
+                  <p className="text-[11px] text-slate-400 mt-1.5">{feedback.date}</p>
                 </div>
-                <p className="text-gray-600 text-sm">{feedback.feedback}</p>
-                <p className="text-xs text-gray-500 mt-2">Date: {feedback.date}</p>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -1192,28 +1362,28 @@ function LectureDashboard() {
     const studentsToShow = gradingTab === 'to-be-graded' ? toBeGraded : graded;
     
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Final Grading</h2>
+      <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm">
+        <div className="px-6 py-5 border-b border-white/30 flex justify-between items-center">
+          <h2 className="text-base font-semibold text-slate-900">Final Grading</h2>
           
           {/* Tab Switcher */}
-          <div className="flex gap-2">
+          <div className="flex bg-white/20 backdrop-blur-sm rounded-lg p-0.5">
             <button
               onClick={() => setGradingTab('to-be-graded')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 gradingTab === 'to-be-graded'
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               To be Graded ({toBeGraded.length})
             </button>
             <button
               onClick={() => setGradingTab('graded')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 gradingTab === 'graded'
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Graded ({graded.length})
@@ -1221,71 +1391,73 @@ function LectureDashboard() {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {studentsToShow.map((student) => {
-            const vivaSchedule = vivaSchedules.find(vs => vs.studentId === student._id);
-            return (
-              <div key={student._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{student.name}</h3>
-                    <p className="text-sm text-gray-600">{student.email}</p>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {studentsToShow.map((student) => {
+              const vivaSchedule = vivaSchedules.find(vs => vs.studentId === student._id);
+              return (
+                <div key={student._id} className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg p-4 hover:bg-white/50 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">{student.name}</h3>
+                      <p className="text-xs text-slate-500">{student.email}</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ring-1 ${
+                        student.status === 'Graded' ? 'bg-purple-50 text-purple-700 ring-purple-600/20' : 'bg-blue-50 text-blue-700 ring-blue-600/20'
+                      }`}>
+                        {student.status}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">
+                        Viva Done
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      student.status === 'Graded' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {student.status}
-                    </span>
-                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                      Viva Completed
-                    </span>
-                  </div>
-                </div>
               
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Viva Score:</span>
-                  <span className="font-medium">{student.vivaScore || '-'}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Viva Score:</span>
+                      <span className="font-medium text-slate-700">{student.vivaScore || '-'}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Report Score:</span>
+                      <span className="font-medium text-slate-700">{student.reportMark || '-'}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Company Rating:</span>
+                      <span className="font-medium text-slate-700">{student.companyRating ? `${student.companyRating}/5` : '-'}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold pt-2 border-t border-white/20">
+                      <span className="text-slate-600">Final Score:</span>
+                      <span className="text-indigo-600">{student.finalScore ? `${student.finalScore.toFixed(1)}%` : '-'}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-slate-600">Final Grade:</span>
+                      <span className="text-indigo-600">{student.finalGrade || '-'}</span>
+                    </div>
+                  </div>
+              
+                  <button 
+                    onClick={() => handleAssignGrade(student)}
+                    className="w-full mt-3 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs font-medium"
+                  >
+                    {student.status === 'Graded' ? 'Edit Grade' : 'Assign Grade'}
+                  </button>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Report Score:</span>
-                  <span className="font-medium">{student.reportMark || '-'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Company Rating:</span>
-                  <span className="font-medium">{student.companyRating ? `${student.companyRating}/5` : '-'}</span>
-                </div>
-                <div className="flex justify-between text-sm font-semibold pt-2 border-t">
-                  <span>Final Score:</span>
-                  <span className="text-orange-600">{student.finalScore ? `${student.finalScore.toFixed(1)}%` : '-'}</span>
-                </div>
-                <div className="flex justify-between text-sm font-semibold">
-                  <span>Final Grade:</span>
-                  <span className="text-orange-600">{student.finalGrade || '-'}</span>
-                </div>
+              );
+            })}
+            
+            {studentsToShow.length === 0 && (
+              <div className="col-span-full text-center py-12 text-slate-400">
+                <Award size={40} className="mx-auto mb-3 text-slate-300" />
+                <p className="text-sm">
+                  {gradingTab === 'to-be-graded' 
+                    ? 'No students available for grading.' 
+                    : 'No students have been graded yet.'}
+                </p>
               </div>
-              
-              <button 
-                onClick={() => handleAssignGrade(student)}
-                className="w-full mt-3 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm"
-              >
-                {student.status === 'Graded' ? 'Edit Grade' : 'Assign Grade'}
-              </button>
-            </div>
-            );
-          })}
-          
-          {studentsToShow.length === 0 && (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              <Award size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>
-                {gradingTab === 'to-be-graded' 
-                  ? 'No students available for grading.' 
-                  : 'No students have been graded yet.'}
-              </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     );
@@ -1293,84 +1465,113 @@ function LectureDashboard() {
 
   if (isLoading) return <LoadingSpinner />;
 
+  const sidebarLinks = [
+    { id: 'overview', label: 'Overview', icon: TrendingUp },
+    { id: 'students', label: 'Students', icon: Users },
+    { id: 'viva', label: 'Viva Schedule', icon: Calendar },
+    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'feedbacks', label: 'Feedback', icon: Building },
+    { id: 'grading', label: 'Final Grading', icon: Award }
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-300">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-900 via-gray-900 to-purple-800 shadow-lg border-b border-purple-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="text-white" size={20} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Lecture Dashboard</h1>
-                <p className="text-xs font-medium text-purple-300/90">Viva scheduling, reports, company feedback &amp; final grading</p>
-                {lecturerData && (
-                  <span className="mt-1 block text-sm text-purple-200">
-                    Welcome back, {lecturerData.fullName}
-                  </span>
-                )}
-              </div>
+    <div className="min-h-screen bg-slate-100 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-30">
+        {/* Brand */}
+        <div className="px-6 py-5 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <BookOpen size={18} />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={logout}
-                className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600"
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
+            <div>
+              <h1 className="text-base font-bold tracking-tight">Lecture Panel</h1>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest">Internship Mgmt</p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-gradient-to-r from-purple-800 to-gray-800 border-b border-purple-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {[
-              { id: 'overview', label: 'Overview', icon: TrendingUp },
-              { id: 'students', label: 'Students', icon: Users },
-              { id: 'viva', label: 'Viva Schedule', icon: Calendar },
-              { id: 'reports', label: 'Reports', icon: FileText },
-              { id: 'feedbacks', label: 'Company Feedback', icon: Building },
-              { id: 'grading', label: 'Final Grading', icon: Award }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 px-1 border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-purple-400 text-white'
-                    : 'border-transparent text-purple-200 hover:text-white hover:border-purple-500'
-                }`}
-              >
-                <tab.icon size={18} />
-                {tab.label}
-              </button>
-            ))}
+        {/* Nav Links */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {sidebarLinks.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => setActiveTab(link.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === link.id
+                  ? 'bg-indigo-600/90 text-white shadow-lg shadow-indigo-600/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <link.icon size={18} />
+              {link.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* User Card */}
+        <div className="px-4 py-4 border-t border-white/20">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-indigo-500/30 rounded-full flex items-center justify-center text-indigo-300 text-sm font-bold">
+              {lecturerData?.fullName ? lecturerData.fullName.split(' ').map(n => n[0]).join('') : 'L'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-200 truncate">{lecturerData?.fullName || 'Lecturer'}</p>
+              <p className="text-[11px] text-slate-500">Lecturer</p>
+            </div>
+            <button
+              onClick={logout}
+              className="p-2 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
+              title="Logout"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'students' && renderStudents()}
-        {activeTab === 'viva' && renderVivaSchedules()}
-        {activeTab === 'reports' && renderInternshipReports()}
-        {activeTab === 'feedbacks' && renderCompanyFeedbacks()}
-        {activeTab === 'grading' && renderFinalGrading()}
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64">
+        {/* Top Bar */}
+        <header className="sticky top-0 z-20 bg-slate-50/80 backdrop-blur-md border-b border-white/30">
+          <div className="px-8 py-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">
+                {sidebarLinks.find(l => l.id === activeTab)?.label || 'Overview'}
+              </h2>
+              <p className="text-sm text-slate-500 mt-0.5">
+                {activeTab === 'overview' && 'Dashboard analytics & performance insights'}
+                {activeTab === 'students' && 'Manage & monitor student internships'}
+                {activeTab === 'viva' && 'Schedule & track viva presentations'}
+                {activeTab === 'reports' && 'Review & evaluate internship reports'}
+                {activeTab === 'feedbacks' && 'Company feedback & ratings overview'}
+                {activeTab === 'grading' && 'Assign & manage final grades'}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="p-8">
+          {activeTab === 'overview' && renderOverview()}
+          {activeTab === 'students' && renderStudents()}
+          {activeTab === 'viva' && renderVivaSchedules()}
+          {activeTab === 'reports' && renderInternshipReports()}
+          {activeTab === 'feedbacks' && renderCompanyFeedbacks()}
+          {activeTab === 'grading' && renderFinalGrading()}
+        </div>
       </div>
 
       {/* Schedule Viva Modal */}
       {showScheduleModal && (
-        <div className="fixed inset-0 bg-slate-300 bg-opacity-90 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-slate-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-4">
               {selectedSchedule ? 'Edit Viva Schedule' : 'Schedule New Viva'}
             </h3>
             <div className="space-y-4">
@@ -1379,7 +1580,7 @@ function LectureDashboard() {
                 <select
                   value={scheduleForm.studentId}
                   onChange={(e) => setScheduleForm({...scheduleForm, studentId: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white"
                   required
                 >
                   <option value="">Select a student</option>
@@ -1403,29 +1604,29 @@ function LectureDashboard() {
                   value={scheduleForm.date}
                   onChange={(e) => setScheduleForm({...scheduleForm, date: e.target.value})}
                   min={getTodayDate()}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Time *</label>
                 <input
                   type="time"
                   value={scheduleForm.time}
                   onChange={(e) => setScheduleForm({...scheduleForm, time: e.target.value})}
                   min={scheduleForm.date === getTodayDate() ? getCurrentTime() : ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Venue *</label>
                 <input
                   type="text"
                   placeholder="e.g., Room 101, Main Building"
                   value={scheduleForm.venue}
                   onChange={(e) => setScheduleForm({...scheduleForm, venue: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   minLength="3"
                   required
                 />
@@ -1435,7 +1636,7 @@ function LectureDashboard() {
                 <select
                   value={scheduleForm.status}
                   onChange={(e) => setScheduleForm({...scheduleForm, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white"
                 >
                   <option value="Scheduled">Scheduled</option>
                   <option value="Completed">Completed</option>
@@ -1450,7 +1651,7 @@ function LectureDashboard() {
                   onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
                   rows={3}
                   maxLength="200"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -1467,13 +1668,13 @@ function LectureDashboard() {
                       status: 'Scheduled'
                     });
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-slate-200 text-sm text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveSchedule}
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   {selectedSchedule ? 'Update' : 'Schedule'}
                 </button>
@@ -1485,42 +1686,42 @@ function LectureDashboard() {
 
       {/* Report Review Modal */}
       {showReviewModal && selectedReport && (
-        <div className="fixed inset-0 bg-slate-300 bg-opacity-90 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-200">
             <div className="mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Review Internship Report</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Review Internship Report</h3>
               
               {/* Student Information */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white/30 backdrop-blur-sm rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <p className="text-sm text-gray-600">Student Name</p>
-                    <p className="font-medium text-gray-900">{selectedReport.studentName}</p>
+                    <p className="text-[11px] text-slate-400 uppercase tracking-wider">Student Name</p>
+                    <p className="text-sm font-medium text-slate-900">{selectedReport.studentName}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900">{selectedReport.studentEmail}</p>
+                    <p className="text-[11px] text-slate-400 uppercase tracking-wider">Email</p>
+                    <p className="text-sm font-medium text-slate-900">{selectedReport.studentEmail}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Internship</p>
-                    <p className="font-medium text-gray-900">{selectedReport.internshipTitle}</p>
+                    <p className="text-[11px] text-slate-400 uppercase tracking-wider">Internship</p>
+                    <p className="text-sm font-medium text-slate-900">{selectedReport.internshipTitle}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Company</p>
-                    <p className="font-medium text-gray-900">{selectedReport.company}</p>
+                    <p className="text-[11px] text-slate-400 uppercase tracking-wider">Company</p>
+                    <p className="text-sm font-medium text-slate-900">{selectedReport.company}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Submitted Date</p>
-                    <p className="font-medium text-gray-900">{selectedReport.submittedDate}</p>
+                    <p className="text-[11px] text-slate-400 uppercase tracking-wider">Submitted Date</p>
+                    <p className="text-sm font-medium text-slate-900">{selectedReport.submittedDate}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Current Status</p>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    <p className="text-[11px] text-slate-400 uppercase tracking-wider">Current Status</p>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ring-1 ${
                       selectedReport.status === 'Approved' 
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
                         : selectedReport.status === 'Rejected'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-red-50 text-red-700 ring-red-600/20'
+                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
                     }`}>
                       {selectedReport.status}
                     </span>
@@ -1530,20 +1731,20 @@ function LectureDashboard() {
 
               {/* Report Content */}
               <div className="mb-6">
-                <h4 className="text-lg font-medium text-gray-900 mb-3">Report Content</h4>
-                <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                  <p className="text-gray-700 whitespace-pre-wrap">{selectedReport.reportContent}</p>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Report Content</h4>
+                <div className="bg-white/30 backdrop-blur-sm rounded-lg p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm text-slate-600 whitespace-pre-wrap">{selectedReport.reportContent}</p>
                 </div>
               </div>
 
               {/* Review Form */}
-              <div className="border-t pt-6">
-                <h4 className="text-lg font-medium text-gray-900 mb-4">Evaluation</h4>
+              <div className="border-t border-white/20 pt-6">
+                <h4 className="text-sm font-semibold text-slate-900 mb-4">Evaluation</h4>
                 
                 <div className="space-y-4">
                   {/* Mark Input */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
                       Mark (out of 100%) *
                     </label>
                     <div className="flex items-center gap-4">
@@ -1555,7 +1756,7 @@ function LectureDashboard() {
                         value={reviewForm.mark}
                         onChange={(e) => setReviewForm({...reviewForm, mark: e.target.value})}
                         placeholder="Enter mark (0-100)"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                         required
                       />
                       <div className="flex items-center gap-2">
@@ -1566,16 +1767,16 @@ function LectureDashboard() {
                           step="0.1"
                           value={reviewForm.mark || 0}
                           onChange={(e) => setReviewForm({...reviewForm, mark: e.target.value})}
-                          className="w-32"
+                          className="w-32 accent-indigo-600"
                         />
-                        <span className="text-sm font-medium text-gray-700 w-12">{reviewForm.mark || 0}%</span>
+                        <span className="text-sm font-medium text-slate-600 w-12">{reviewForm.mark || 0}%</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Feedback */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
                       Feedback (optional)
                     </label>
                     <textarea
@@ -1584,9 +1785,9 @@ function LectureDashboard() {
                       placeholder="Provide feedback for the student..."
                       rows={4}
                       maxLength="500"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       {reviewForm.feedback ? reviewForm.feedback.length : 0}/500 characters
                     </p>
                   </div>
@@ -1599,19 +1800,19 @@ function LectureDashboard() {
                         setSelectedReport(null);
                         setReviewForm({ mark: '', feedback: '' });
                       }}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-slate-200 text-sm text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleRejectReport}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
                     >
                       Reject Report
                     </button>
                     <button
                       onClick={handleSaveReview}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                      className="px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors"
                     >
                       Approve & Mark
                     </button>
@@ -1625,22 +1826,22 @@ function LectureDashboard() {
 
       {/* Grading Modal */}
       {showGradingModal && selectedGradingStudent && (
-        <div className="fixed inset-0 bg-slate-300 bg-opacity-90 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-200">
+            <h3 className="text-xl font-bold text-slate-900 mb-6">
               {selectedGradingStudent.finalGrade ? 'Edit Grade' : 'Assign Grade'} - {selectedGradingStudent.name}
             </h3>
             
             {/* Student Information */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/30 backdrop-blur-sm rounded-lg p-4 mb-6">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-sm text-gray-600">Student Name</p>
-                  <p className="font-medium text-gray-900">{selectedGradingStudent.name}</p>
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wider">Student Name</p>
+                  <p className="text-sm font-medium text-slate-900">{selectedGradingStudent.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-medium text-gray-900">{selectedGradingStudent.email}</p>
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wider">Email</p>
+                  <p className="text-sm font-medium text-slate-900">{selectedGradingStudent.email}</p>
                 </div>
               </div>
             </div>
@@ -1649,7 +1850,7 @@ function LectureDashboard() {
             <div className="space-y-6">
               {/* Report Mark (Manual Entry) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Report Score (out of 100) *
                 </label>
                 <input
@@ -1681,7 +1882,7 @@ function LectureDashboard() {
                       finalGrade
                     });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   placeholder="Enter report score manually"
                   required
                 />
@@ -1689,7 +1890,7 @@ function LectureDashboard() {
 
               {/* Company Rating (Auto-filled from feedback, editable) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Company Rating (out of 100) *
                 </label>
                 <input
@@ -1721,7 +1922,7 @@ function LectureDashboard() {
                       finalGrade
                     });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   placeholder="Auto-filled from Company Feedback (rating * 20)"
                   required
                 />
@@ -1729,7 +1930,7 @@ function LectureDashboard() {
 
               {/* Viva Score (Manual Entry) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Viva Score (out of 100) *
                 </label>
                 <input
@@ -1761,30 +1962,30 @@ function LectureDashboard() {
                       finalGrade
                     });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   required
                 />
               </div>
 
               {/* Auto-calculated Results */}
               {(gradingForm.vivaScore && gradingForm.reportMark && gradingForm.companyRating) && (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3">Calculated Results</h4>
+                <div className="bg-indigo-500/10 backdrop-blur-sm rounded-lg p-4 border border-indigo-200/30">
+                  <h4 className="text-sm font-semibold text-slate-900 mb-3">Calculated Results</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-gray-600">Final Score</p>
-                      <p className="text-lg font-bold text-blue-600">
+                      <p className="text-xs text-slate-500">Final Score</p>
+                      <p className="text-lg font-bold text-indigo-600">
                         {gradingForm.finalScore.toFixed(1)}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Final Grade</p>
-                      <p className="text-lg font-bold text-blue-600">
+                      <p className="text-xs text-slate-500">Final Grade</p>
+                      <p className="text-lg font-bold text-indigo-600">
                         {gradingForm.finalGrade}
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-[11px] text-slate-400 mt-2">
                     Weightage: Viva 40% + Report 40% + Company 20%
                   </p>
                 </div>
@@ -1798,13 +1999,13 @@ function LectureDashboard() {
                     setSelectedGradingStudent(null);
                     setGradingForm({ vivaScore: '', finalScore: 0, finalGrade: '' });
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-slate-200 text-sm text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveGrade}
-                  className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   {selectedGradingStudent.finalGrade ? 'Update Grade' : 'Assign Grade'}
                 </button>

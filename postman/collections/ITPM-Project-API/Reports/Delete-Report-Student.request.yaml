@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Report (Student)
+method: DELETE
+url: '{{baseUrl}}/api/report/:id'
+order: 3000
+pathVariables:
+  - key: id
+    value: ''

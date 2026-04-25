@@ -1,0 +1,14 @@
+$kind: http-request
+name: Update Skills
+method: POST
+url: '{{baseUrl}}/api/portfolio/update-skills'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "skills": ["JavaScript", "React", "Node.js"]
+    }

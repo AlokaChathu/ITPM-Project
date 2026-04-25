@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Internship Submissions
+method: GET
+url: '{{baseUrl}}/api/admin/internships'
+order: 17000

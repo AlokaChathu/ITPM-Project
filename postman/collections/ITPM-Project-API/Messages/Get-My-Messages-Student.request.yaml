@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get My Messages (Student)
+method: GET
+url: '{{baseUrl}}/api/messages/my-messages'
+order: 5000

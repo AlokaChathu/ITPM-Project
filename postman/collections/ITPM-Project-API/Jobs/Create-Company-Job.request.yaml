@@ -1,0 +1,19 @@
+$kind: http-request
+name: Create Company Job
+method: POST
+url: '{{baseUrl}}/api/jobs/company/create'
+order: 8000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Frontend Intern",
+      "company": "Tech Corp",
+      "description": "Frontend internship",
+      "location": "Colombo",
+      "type": "Remote",
+      "techStack": ["React", "CSS"]
+    }

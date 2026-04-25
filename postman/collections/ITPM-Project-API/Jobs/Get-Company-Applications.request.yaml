@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Company Applications
+method: GET
+url: '{{baseUrl}}/api/jobs/company/applications'
+order: 10000

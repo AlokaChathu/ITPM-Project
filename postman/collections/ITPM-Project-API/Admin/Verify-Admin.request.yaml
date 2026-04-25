@@ -1,0 +1,5 @@
+$kind: http-request
+name: Verify Admin
+method: GET
+url: '{{baseUrl}}/api/admin/verify'
+order: 4000

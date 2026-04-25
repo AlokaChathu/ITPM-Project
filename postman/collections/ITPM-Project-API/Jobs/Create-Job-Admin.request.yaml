@@ -1,0 +1,17 @@
+$kind: http-request
+name: Create Job (Admin)
+method: POST
+url: '{{baseUrl}}/api/jobs/create'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Software Intern",
+      "company": "Tech Corp",
+      "description": "Looking for a software intern",
+      "techStack": ["React", "Node.js"]
+    }

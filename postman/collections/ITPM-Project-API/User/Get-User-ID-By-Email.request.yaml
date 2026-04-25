@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get User ID By Email
+method: GET
+url: '{{baseUrl}}/api/user/customer'
+order: 3000
+queryParams:
+  - key: email
+    value: '{{userEmail}}'

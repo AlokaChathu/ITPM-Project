@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Admin User
+method: DELETE
+url: '{{baseUrl}}/api/admin/users/:id'
+order: 9000
+pathVariables:
+  - key: id
+    value: ''

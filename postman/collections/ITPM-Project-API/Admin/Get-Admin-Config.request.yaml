@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Admin Config
+method: GET
+url: '{{baseUrl}}/api/admin/config'
+order: 12000

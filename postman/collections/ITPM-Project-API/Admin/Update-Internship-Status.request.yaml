@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Internship Status
+method: PATCH
+url: '{{baseUrl}}/api/admin/internships/:id'
+order: 18000
+pathVariables:
+  - key: id
+    value: ''
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "approved"
+    }

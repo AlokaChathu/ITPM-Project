@@ -1,0 +1,5 @@
+$kind: http-request
+name: Admin Logout
+method: GET
+url: '{{baseUrl}}/api/admin/logout'
+order: 3000

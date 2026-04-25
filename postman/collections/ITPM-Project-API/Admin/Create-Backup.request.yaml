@@ -1,0 +1,5 @@
+$kind: http-request
+name: Create Backup
+method: POST
+url: '{{baseUrl}}/api/admin/backup'
+order: 15000

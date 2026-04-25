@@ -1,0 +1,15 @@
+$kind: http-request
+name: Update Report (Student)
+method: PUT
+url: '{{baseUrl}}/api/report/update/:id'
+order: 2000
+pathVariables:
+  - key: id
+    value: ''
+body:
+  type: formdata
+  content:
+    - key: report
+      type: file
+      src: ''
+      description: PDF file to upload

@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Roles
+method: GET
+url: '{{baseUrl}}/api/admin/roles'
+order: 10000

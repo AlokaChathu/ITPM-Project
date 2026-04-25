@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Student Grade
+method: PUT
+url: '{{baseUrl}}/api/user/update-grade/:id'
+order: 6000
+pathVariables:
+  - key: id
+    value: '{{userId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "grade": "A"
+    }

@@ -1,0 +1,18 @@
+$kind: http-request
+name: Update Schedule (Admin)
+method: PUT
+url: '{{baseUrl}}/api/viva-schedule/:scheduleId'
+order: 3000
+pathVariables:
+  - key: scheduleId
+    value: '{{scheduleId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "date": "2026-05-20",
+      "time": "2:00 PM"
+    }

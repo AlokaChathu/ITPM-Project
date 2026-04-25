@@ -1,0 +1,14 @@
+$kind: http-request
+name: Restore Backup
+method: POST
+url: '{{baseUrl}}/api/admin/backup/restore'
+order: 16000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "backupId": "{{backupId}}"
+    }

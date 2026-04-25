@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Backup Status
+method: GET
+url: '{{baseUrl}}/api/admin/backup'
+order: 14000
