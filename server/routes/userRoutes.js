@@ -1,6 +1,6 @@
 import express from 'express'
 import userAuth from '../middleware/userAuth.js';
-import { getUserById, getUserData, getUserIdByEmail,updateUser,deleteUser, updateStudentGrade } from '../controllers/userController.js';
+import { getUserById, getUserData, getUserIdByEmail,updateUser,deleteUser, updateStudentGrade, getInternshipDetails } from '../controllers/userController.js';
 
 const userRouter = express.Router();
 
@@ -10,6 +10,6 @@ userRouter.get('/customer',getUserIdByEmail);
 userRouter.put('/customer/:id',userAuth, updateUser);
 userRouter.delete('/customer/:id', deleteUser);
 userRouter.put('/update-grade/:id', updateStudentGrade);
-
+userRouter.get('/internship-details', userAuth, getInternshipDetails);
 
 export default userRouter;
