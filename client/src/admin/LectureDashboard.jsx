@@ -660,12 +660,15 @@ function LectureDashboard() {
 
     setSelectedGradingStudent(student);
     
-    // Auto-fill company rating only (convert 5-point to 100-point scale)
+    // Auto-fill company rating (convert 5-point to 100-point scale)
     const feedback = companyFeedbacks.find(f => f.studentName?.toLowerCase() === student.name?.toLowerCase());
+    
+    // Auto-fill report mark from internshipReports if report has been approved and marked
+    const report = internshipReports.find(r => r.studentName?.toLowerCase() === student.name?.toLowerCase() && r.status === 'Approved');
     
     setGradingForm({
       vivaScore: student.vivaScore || '',
-      reportMark: student.reportMark || '', // Manual entry, not auto-filled
+      reportMark: report && report.mark ? report.mark : (student.reportMark || ''),
       companyRating: feedback ? feedback.rating * 20 : '', // Convert 5-point to 100-point scale
       finalScore: student.finalScore || 0,
       finalGrade: student.finalGrade || ''
