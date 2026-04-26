@@ -68,16 +68,16 @@ function FinalResults() {
   };
 
   const getGradeColor = (grade) => {
-    if (!grade) return 'bg-gray-100 text-gray-800';
-    if (grade === 'A+') return 'bg-emerald-100 text-emerald-800';
-    if (grade === 'A') return 'bg-green-100 text-green-800';
-    if (grade === 'A-') return 'bg-lime-100 text-lime-800';
-    if (grade === 'B+') return 'bg-teal-100 text-teal-800';
-    if (grade === 'B') return 'bg-cyan-100 text-cyan-800';
-    if (grade === 'B-') return 'bg-sky-100 text-sky-800';
-    if (grade === 'C+') return 'bg-blue-100 text-blue-800';
-    if (grade === 'C') return 'bg-indigo-100 text-indigo-800';
-    return 'bg-rose-100 text-rose-800';
+    if (!grade) return 'bg-gray-700 text-gray-300';
+    if (grade === 'A+') return 'bg-emerald-500 text-white';
+    if (grade === 'A') return 'bg-green-500 text-white';
+    if (grade === 'A-') return 'bg-lime-500 text-white';
+    if (grade === 'B+') return 'bg-teal-500 text-white';
+    if (grade === 'B') return 'bg-cyan-500 text-white';
+    if (grade === 'B-') return 'bg-sky-500 text-white';
+    if (grade === 'C+') return 'bg-blue-500 text-white';
+    if (grade === 'C') return 'bg-indigo-500 text-white';
+    return 'bg-rose-500 text-white';
   };
 
   const getScoreColor = (score) => {
@@ -173,7 +173,7 @@ function FinalResults() {
               <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                 <div>
                   <p className="text-slate-400 text-sm font-medium uppercase tracking-widest mb-2">Final Grade</p>
-                  <div className={`inline-block px-8 py-4 rounded-2xl text-5xl font-black ${getGradeColor(studentData.finalGrade)} text-white`}>
+                  <div className={`inline-block px-8 py-4 rounded-2xl text-5xl font-black ${getGradeColor(studentData.finalGrade)}`}>
                     {studentData.finalGrade}
                   </div>
                 </div>
