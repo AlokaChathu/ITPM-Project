@@ -180,13 +180,14 @@ function LectureDashboard() {
     }
 
     // Fetch internship reports
+    let formattedReports = [];
     try {
       const { data } = await axios.get('http://localhost:4000/api/report/all', {
         withCredentials: true
       });
       
       if (data.success && data.data) {
-        const formattedReports = data.data.map(report => ({
+        formattedReports = data.data.map(report => ({
           id: report._id,
           studentName: report.studentName,
           studentEmail: report.studentEmail,
@@ -206,11 +207,11 @@ function LectureDashboard() {
       setInternshipReports([]);
     }
 
-    // Process chart data
-    processMonthlyData(internshipReports);
-    processGradeDistribution(internshipReports);
+    // Process chart data using local variables (not state which is async)
+    processMonthlyData(formattedReports);
+    processGradeDistribution(formattedReports);
     processCompanyRatings(companyFeedbacks);
-    processInternshipProgress(students, vivaSchedules, internshipReports);
+    processInternshipProgress(students, vivaSchedules, formattedReports);
   };
 
   // Process monthly performance data
