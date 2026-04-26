@@ -560,7 +560,7 @@ function LectureDashboard() {
     setShowReviewModal(true);
   };
 
-  const handleSaveReview = () => {
+  const handleSaveReview = async () => {
     // Form validation
     if (!reviewForm.mark) {
       toast.error('Please enter a mark');
@@ -597,25 +597,42 @@ function LectureDashboard() {
       return;
     }
 
-    // Update the report with mark and status
-    setInternshipReports(internshipReports.map(report => 
-      report.id === selectedReport.id 
-        ? {
-            ...report,
-            mark: mark,
-            status: 'Approved',
-            feedback: reviewForm.feedback
-          }
-        : report
-    ));
+    try {
+      // Save to database
+      axios.defaults.withCredentials = true;
+      const { data } = await axios.put(`http://localhost:4000/api/report/grade/${selectedReport.id}`, {
+        mark: mark,
+        feedback: reviewForm.feedback,
+        status: 'Approved'
+      });
 
-    toast.success(`Report reviewed and marked: ${mark}%`);
-    setShowReviewModal(false);
-    setSelectedReport(null);
-    setReviewForm({ mark: '', feedback: '' });
+      if (data.success) {
+        // Update local state
+        setInternshipReports(internshipReports.map(report => 
+          report.id === selectedReport.id 
+            ? {
+                ...report,
+                mark: mark,
+                status: 'Approved',
+                feedback: reviewForm.feedback
+              }
+            : report
+        ));
+
+        toast.success(`Report reviewed and marked: ${mark}%`);
+        setShowReviewModal(false);
+        setSelectedReport(null);
+        setReviewForm({ mark: '', feedback: '' });
+      } else {
+        toast.error(data.message || 'Failed to update report');
+      }
+    } catch (error) {
+      console.error('Error saving report grade:', error);
+      toast.error('Failed to update report grade');
+    }
   };
 
-  const handleRejectReport = () => {
+  const handleRejectReport = async () => {
     // Form validation for rejection
     if (!reviewForm.feedback || !reviewForm.feedback.trim()) {
       toast.error('Please provide feedback for rejection');
@@ -632,22 +649,39 @@ function LectureDashboard() {
       return;
     }
 
-    // Update the report with rejected status
-    setInternshipReports(internshipReports.map(report => 
-      report.id === selectedReport.id 
-        ? {
-            ...report,
-            status: 'Rejected',
-            feedback: reviewForm.feedback,
-            mark: null
-          }
-        : report
-    ));
+    try {
+      // Save to database
+      axios.defaults.withCredentials = true;
+      const { data } = await axios.put(`http://localhost:4000/api/report/grade/${selectedReport.id}`, {
+        mark: null,
+        feedback: reviewForm.feedback,
+        status: 'Rejected'
+      });
 
-    toast.success('Report rejected with feedback');
-    setShowReviewModal(false);
-    setSelectedReport(null);
-    setReviewForm({ mark: '', feedback: '' });
+      if (data.success) {
+        // Update local state
+        setInternshipReports(internshipReports.map(report => 
+          report.id === selectedReport.id 
+            ? {
+                ...report,
+                status: 'Rejected',
+                feedback: reviewForm.feedback,
+                mark: null
+              }
+            : report
+        ));
+
+        toast.success('Report rejected with feedback');
+        setShowReviewModal(false);
+        setSelectedReport(null);
+        setReviewForm({ mark: '', feedback: '' });
+      } else {
+        toast.error(data.message || 'Failed to update report');
+      }
+    } catch (error) {
+      console.error('Error rejecting report:', error);
+      toast.error('Failed to reject report');
+    }
   };
 
   const handleAssignGrade = (student) => {
